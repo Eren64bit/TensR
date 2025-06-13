@@ -19,32 +19,38 @@ private:
     size_t offset_ = 0;
     size_t rank_;
 
-    static_assert(std::is_arithmetic_v<T>, "Tensor type must be arithmetic");
+    static_assert(std::is_arithmetic_v<T>, "error:Tensor type must be arithmetic");
 
     void compute_total_size_();
     void compute_strides_();
     void compute_rank_();
 
-    size_t flat_index_(std::vector<size_t> indices);
+    size_t flat_index_(const std::vector<size_t>& indices);
 public:
     using value_type = T;
 
     explicit Tensr(std::vector<size_t> shape);
-    Tensr(std::vector<size(t)> shape, std::vector<value_type> data);
+    Tensr(std::vector<size_t> shape, std::vector<value_type> data);
 
 
     //Basic Functions
-    size_t const size() const {return total_size_;}
-    size_t const offset() const {return offset_;}
-    size_t const rank() const {return rank_;}
-
-    //
-    value_type& operator[](size_t idx);
-    const value_type& operator[](size_t idx) const;
+    size_t  size() const {return total_size_;}
+    size_t  offset() const {return offset_;}
+    size_t  rank() const {return rank_;}
 
     const std::vector<size_t>& shape() const { return shape_; }
-    const std::vector<T>& data() const { return *data_; }
+    const std::vector<T>& data() const { return data_; }
 
+
+    T& at(const std::vector<size_t>& indices);
+    const T& at(const std::vector<size_t>& indices) const;
+
+    T& operator[](const std::vector<size_t>& idx) { return at(idx); }
+    const operator[](const std::vector<size_t>& idx) const { return at(idx); }
+
+    void reshape(std::vector<size_t> new_shape);
+
+    Tensr operator+()
 };
 
 /*
