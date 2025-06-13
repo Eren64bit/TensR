@@ -25,7 +25,7 @@ private:
     void compute_strides_();
     void compute_rank_();
 
-    size_t flat_index_(const std::vector<size_t>& indices);
+    size_t flat_index_(const std::vector<size_t>& indices) const;
 public:
     using value_type = T;
 
@@ -46,11 +46,11 @@ public:
     const T& at(const std::vector<size_t>& indices) const;
 
     T& operator[](const std::vector<size_t>& idx) { return at(idx); }
-    const operator[](const std::vector<size_t>& idx) const { return at(idx); }
+    const T& operator[](const std::vector<size_t>& idx) const { return at(idx); }
 
     void reshape(std::vector<size_t> new_shape);
 
-    Tensr operator+()
+    Tensr operator+();
 };
 
 /*

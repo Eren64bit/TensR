@@ -9,6 +9,12 @@ Tensr<T, Device>::Tensr(std::vector<size_t> shape)
     compute_total_size_();
     compute_rank_();
     compute_strides_();
+    if (data_.size() != total_size_) {
+        throw std::runtime_error("error:Data size does not match tensor shape");
+    }
+    if (data_.size() != total_size_) {
+        throw std::runtime_error("error:Data size does not match tensor shape");
+    }
 
     if (this->total_size_ == 0) throw std::runtime_error("error:Tensor size must be bigger than 0\n");
     //fill with zeros
@@ -20,6 +26,10 @@ template<typename T, DeviceType Device>
 Tensr<T, Device>::Tensr(std::vector<size_t> shape, std::vector<value_type> data)
     : shape_(std::move(shape)), data_(std::move(data)) {
         compute_total_size_();
+        if (total_size_ != data.size()) {
+            throw std::runtime_error("Data and Shape does not match up");
+        }
+
         compute_rank_();
         compute_strides_();
     }
@@ -56,7 +66,7 @@ void Tensr<T, Device>::reshape(std::vector<size_t> new_shape) {
 
 //Helper Functions////////////////////////////
 template<typename T, DeviceType Device>
-size_t Tensr<T, Device>::flat_index_(const std::vector<size_t>& indices) {
+size_t Tensr<T, Device>::flat_index_(const std::vector<size_t>& indices) const{
     if (indices.size() != rank_) {
         throw std::runtime_error("error:Index dimensionality does not match tensor rank");
     }
@@ -106,4 +116,5 @@ void Tensr<T, Device>::compute_rank_() {
 
 
 
+//Carpe diem.
 //Carpe diem.
