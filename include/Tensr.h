@@ -50,7 +50,6 @@ public:
 
     void reshape(std::vector<size_t> new_shape);
 
-    Tensr operator+();
 };
 
 /*

@@ -65,6 +65,8 @@ void Tensr<T, Device>::reshape(std::vector<size_t> new_shape) {
 //***************************************************************END
 
 //Helper Functions////////////////////////////
+
+//***************************************************************Flat index
 template<typename T, DeviceType Device>
 size_t Tensr<T, Device>::flat_index_(const std::vector<size_t>& indices) const{
     if (indices.size() != rank_) {
@@ -84,7 +86,7 @@ size_t Tensr<T, Device>::flat_index_(const std::vector<size_t>& indices) const{
     }
     return result;
 }
-
+//***************************************************************Total Size
 template<typename T, DeviceType Device>
 void Tensr<T, Device>::compute_total_size_() {
     if (shape_.empty()) {
@@ -96,7 +98,7 @@ void Tensr<T, Device>::compute_total_size_() {
     }
     this->total_size_ = result;
 }
-
+//***************************************************************Compute Strides
 template<typename T, DeviceType Device>
 void Tensr<T, Device>::compute_strides_() {
     this->stride_.clear();
@@ -107,7 +109,7 @@ void Tensr<T, Device>::compute_strides_() {
         stride_[i] = stride_[i + 1] * shape_[i + 1];
     }
 }
-
+//***************************************************************Compute Ran
 template<typename T, DeviceType Device>
 void Tensr<T, Device>::compute_rank_() {
     this->rank_ = this->shape_.size();
@@ -116,5 +118,4 @@ void Tensr<T, Device>::compute_rank_() {
 
 
 
-//Carpe diem.
 //Carpe diem.
