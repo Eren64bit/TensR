@@ -24,6 +24,8 @@ private:
     void compute_total_size_();
     void compute_strides_();
     void compute_rank_();
+
+    void flat_index_(std::vector<size_t> indices);
 public:
     using value_type = T;
 

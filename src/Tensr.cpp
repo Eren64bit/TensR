@@ -19,7 +19,10 @@ Tensr<T, Device>::Tensr(std::vector<size_t> shape) {
 //Helper Functions////////////////////////////
 template<typename T, DeviceType Device>
 void Tensr<T, Device>::compute_total_size_() {
-    int result = 1;
+    if (shape_.empty()) {
+        throw std::runtime_error("Shape Cannot be empty");
+    }
+    size_t result = 1;
     for (int i = 0; i < this->shape_.size(); i++) {
         result *= this->shape_[i];
     }
