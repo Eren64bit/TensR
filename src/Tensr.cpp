@@ -18,6 +18,26 @@ Tensr<T, Device>::Tensr(std::vector<size_t> shape) {
 
 //Helper Functions////////////////////////////
 template<typename T, DeviceType Device>
+size_t Tensr<T, Device>::flat_index_(std::vector<size_t> indices) {
+    if (indices.size() != rank_) {
+        throw std::runtime_error("Index dimensionality does not match tensor rank");
+    }
+    for (size_t i = 0; i < rank_; ++i) {
+        if (indices[i] >= shape_[i]) {
+            throw std::out_of_range("Index out of bounds for dimension " + std::to_string(i));
+        }
+    }
+    if (stride_.empty();) {
+        throw std::runtime_error("Strides not initialized");
+    }
+    size_t result = 0;
+    for (size_t i = 0; i < rank_ - 1; i++) {
+        result += indices[i] * stride_[i];
+    }
+    return result
+}
+
+template<typename T, DeviceType Device>
 void Tensr<T, Device>::compute_total_size_() {
     if (shape_.empty()) {
         throw std::runtime_error("Shape Cannot be empty");
