@@ -3,6 +3,7 @@
 #include <vector>
 #include <memory>
 #include <stdexcept>
+#include <type_traits>
 
 #include "DeviceType.h"
 
@@ -39,28 +40,17 @@ public:
     size_t  rank() const {return rank_;}
 
     const std::vector<size_t>& shape() const { return shape_; }
-    const std::vector<T>& data() const { return data_; }
 
+    const std::vector<value_type>& data() const { return data_; }
+    std::vector<value_type>& mutable_data() { return data_; }
 
-    T& at(const std::vector<size_t>& indices);
-    const T& at(const std::vector<size_t>& indices) const;
+    value_type& at(const std::vector<size_t>& indices);
+    const value_type& at(const std::vector<size_t>& indices) const;
 
-    T& operator[](const std::vector<size_t>& idx) { return at(idx); }
-    const T& operator[](const std::vector<size_t>& idx) const { return at(idx); }
+    value_type& operator[](const std::vector<size_t>& idx) { return at(idx); }
+    const value_type& operator[](const std::vector<size_t>& idx) const { return at(idx); }
 
     void reshape(std::vector<size_t> new_shape);
 
 };
 
-/*
-shape = [2,3]
-
-data_shape = {
-    0,0,0
-    0,0,0
-}
-stride
-data_bus = 0,0,0,0,0,0
-
-
-*/
