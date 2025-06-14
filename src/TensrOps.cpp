@@ -30,6 +30,11 @@ Tensr<T, Device> operator+(const Tensr<T, Device>& t, Scalar scalar) {
     }
     return result;
 }
+
+template<typename T,DeviceType Device, typename Scalar, typename = std::enable_if_t<std::is_convertible_v<Scalar, T>>>
+Tensr<T, Device> operator+(Scalar scalar, const Tensr<T, Device>& t) {
+    return t + scalar;
+}
 //***************************************************************END
 
 //***************************************************************Operator (-)
@@ -60,6 +65,11 @@ Tensr<T, Device> operator-(const Tensr<T, Device>& t, Scalar scalar) {
     }
     return result;
 }
+
+template<typename T,DeviceType Device, typename Scalar, typename = std::enable_if_t<std::is_convertible_v<Scalar, T>>>
+Tensr<T, Device> operator-(Scalar scalar, const Tensr<T, Device>& t) {
+    return t - scalar;
+}
 //***************************************************************END
 
 //***************************************************************Operator (*)
@@ -89,6 +99,11 @@ Tensr<T, Device> operator*(const Tensr<T, Device>& t, Scalar scalar) {
         res_data[i] = t_data[i] * scalar;
     }
     return result;
+}
+
+template<typename T,DeviceType Device, typename Scalar, typename = std::enable_if_t<std::is_convertible_v<Scalar, T>>>
+Tensr<T, Device> operator*(Scalar scalar, const Tensr<T, Device>& t) {
+    return t * scalar;
 }
 //***************************************************************END
 
@@ -126,3 +141,10 @@ Tensr<T, Device> operator/(const Tensr<T, Device>& t, Scalar scalar) {
     }
     return result;
 }
+
+template<typename T,DeviceType Device, typename Scalar, typename = std::enable_if_t<std::is_convertible_v<Scalar, T>>>
+Tensr<T, Device> operator/(Scalar scalar, const Tensr<T, Device>& t) {
+    return t / scalar;
+}
+
+//***************************************************************END
