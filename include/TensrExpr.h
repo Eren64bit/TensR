@@ -1,5 +1,6 @@
 #pragma once 
 #include "Tensr.h"
+#include <functional>
 
 
 template<typename T, DeviceType Device>
@@ -28,3 +29,20 @@ public:
         return std::make_shared<ConstExpr<T, Device>>(*this);
     }
 };  
+
+template<typename T, DeviceType Device>
+class BinaryExpr : public TensrExpr<T, Device> {
+private:
+    std::shared_ptr<TensrExpr<T, Device>> lhs_;
+    std::shared_ptr<TensrExpr<T, Device>> rhs_;
+    std::function<T(T, T)> op_;
+public:
+    BinaryExpr(std::shared_ptr<TensrExpr<T, Device>> lhs, std::shared_ptr<TensrExpr<T, Device>> rhs, std::function<T(T, T)> op)
+        : lhs_(lhs), rhs_(rhs), op_(op) {}
+
+    Tensr<T, Device> eval() override {
+        auto lval = lhs_.eval();
+        auto rval = rhs_->eval();
+        //return 
+    }
+};

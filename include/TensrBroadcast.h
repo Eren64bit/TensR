@@ -46,7 +46,7 @@ Tensr<T, Device> broadcast_to(Tensr<T, Device>& t, std::vector<size_t> result_sh
 }
 
 template<typename T, DeviceType Device>
-Tensr<T, Device> broadcast_data(Tensr<T, Device>& source, Tensr<T, Device>& target) {
+void broadcast_data(Tensr<T, Device>& source, Tensr<T, Device>& target) {
     for (size_t flat_idx = 0; flat_idx < target.size(); flat_idx++) {
         std::vector<size_t> multi_idx = target.unflaten_index_(flat_idx);
 
@@ -66,4 +66,26 @@ Tensr<T, Device> broadcast_data(Tensr<T, Device>& source, Tensr<T, Device>& targ
 
         target.mutable_data()[flat_idx] = source.at(orig_idx);
     }
+}
+
+template<typename T, DeviceType Device>
+Tensr<T, Device> broadcast_binary_op(Tensr<T, Device>& lhs, Tensr<T, Device>& rhs, std::function<T(T, T)> func) {
+    std::vector<size_t> cmmn_shape = broadcast_shapes(lhs, rhs);
+    Tensr<T, Device> result(cmmn_shape);
+    Tensr<T, Device> br_lhs = lhs;
+    Tensr<T, Device> br_rhs = rhs;
+    if (lhs.shape() != cmmn_shape) {
+        br_lhs = broadcast_to(lhs, cmmn_shape);
+        broadcast_data(lhs, br_lhs);
+    }
+    if (rhs.shape() != cmmn_shape) {
+        br_rhs = broadcast_to(rhs, cmmn_shape);
+        broadcast_data(rhs, br_rhs);
+    }
+
+    for (int i = 0; i < result.size(); i++) {
+        result[i] = func(br_lhs[i], br_rhs[i]);
+    }
+
+    return result;
 }
