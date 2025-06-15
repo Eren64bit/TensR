@@ -86,6 +86,21 @@ size_t Tensr<T, Device>::flat_index_(const std::vector<size_t>& indices) const{
     }
     return result;
 }
+//***************************************************************unflaten index
+template<typename T, DeviceType Device>
+std::vector<size_t> Tensr<T, Device>::unflaten_index_(const size_t idx) {
+    std::vector<size_t> unflat_idx(this->rank());
+    size_t idx_rem = idx;
+
+    for (size_t i = 0; i < rank(); i++) {
+        size_t stride_i = this->stride()[i];
+        unflat_idx[i] = idx_rem / stride_i;
+        idx_rem = idx_rem % stride_i;
+    }
+
+    return unflat_idx;
+}
+
 //***************************************************************Total Size
 template<typename T, DeviceType Device>
 void Tensr<T, Device>::compute_total_size_() {

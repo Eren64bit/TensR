@@ -27,6 +27,7 @@ private:
     void compute_rank_();
 
     size_t flat_index_(const std::vector<size_t>& indices) const;
+    std::vector<size_t> unflaten_index_(const size_t idx);
 public:
     using value_type = T;
 
@@ -40,6 +41,7 @@ public:
     size_t  rank() const {return rank_;}
 
     const std::vector<size_t>& shape() const { return shape_; }
+    const std::vector<size_t>& stride() const { return stride_; }
 
     const std::vector<value_type>& data() const { return data_; }
     std::vector<value_type>& mutable_data() { return data_; }
