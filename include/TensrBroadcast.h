@@ -30,20 +30,11 @@ std::vector<size_t> broadcast_shapes(const Tensr<T, Device>& l_t, const Tensr<T,
 }
 
 template<typename T, DeviceType Device>
-Tensr<T, Device> broadcast_to(Tensr<T, Device>& t, std::vector<size_t> result_shape) {
-    std::vector<size_t> res_shape;
-    for (size_t i = 0; i < result_shape.size() - t.rank(); i++) {
-        res_shape.push_back(1);
-    }   
-
-    for (size_t i = 0; i < t.rank(); i++) {
-        res_shape.push_back(t.shape()[i]);
-    }
-
-    Tensr<T, Device> res_tensor(res_shape);
-
-    return res_tensor;
-}
+Tensr<T, Device> broadcast_to(const Tensr<T, Device>& src, const std::vector<size_t>& target_shape) {
+    Tensr<T, Device> dst(target_shape);          
+    broadcast_data(src, dst);                    
+    return dst;
+ }
 
 template<typename T, DeviceType Device>
 void broadcast_data(Tensr<T, Device>& source, Tensr<T, Device>& target) {
