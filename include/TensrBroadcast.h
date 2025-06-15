@@ -47,5 +47,23 @@ Tensr<T, Device> broadcast_to(Tensr<T, Device>& t, std::vector<size_t> result_sh
 
 template<typename T, DeviceType Device>
 Tensr<T, Device> broadcast_data(Tensr<T, Device>& source, Tensr<T, Device>& target) {
-    
+    for (size_t flat_idx = 0; flat_idx < target.size(); flat_idx++) {
+        std::vector<size_t> multi_idx = target.unflaten_index_(flat_idx);
+
+        size_t offset = multi_idx.size() - source.rank();
+
+        std::vector<size_t> orig_idx;
+        for (size_t i = 0; i < multi_idx.size(); i++) {
+            if (i < offset) {
+                orig_idx.push_back(0);
+            } else if (source.shape()[i - offset] == 1){
+                orig_idx.push_back(0);
+            } else {
+                orig_idx.push_back(multi_idx[i]);
+            }
+                
+        }
+
+        target.mutable_data()[flat_idx] = source.at(orig_idx);
+    }
 }
