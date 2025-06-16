@@ -5,6 +5,9 @@
 //***************************************************************Transpose
 template<typename T, DeviceType Device>
 Tensr<T, Device> transpose(const Tensr<T, Device>& t, const std::vector<size_t>&);
+
+template<typename T, DeviceType Device>
+Tensr<T, Device> transpose(const Tensr<T, Device>& t);
 //***************************************************************END
 
 //***************************************************************Squeeze 

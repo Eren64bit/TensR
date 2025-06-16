@@ -31,6 +31,15 @@ Tensr<T, Device> transpose(const Tensr<T, Device>& t, const std::vector<size_t>&
 
     return Tensr<T, Device>(res_shape, new_data);
 }
+
+template<typename T, DeviceType Device>
+Tensr<T, Device> transpose(const Tensr<T, Device>& t) {
+    if (t.rank() != 2) {
+        throw std::runtime_error("transpose() overload only supports 2D tensors. Use transpose(t, permute) for higher dimensions.");
+    }
+    return transpose(t, {1, 0});
+
+}
 //****************************************************************END
 //***************************************************************Squeeze 
 template<typename T, DeviceType Device>
