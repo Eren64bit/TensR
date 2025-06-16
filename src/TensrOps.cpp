@@ -1,5 +1,37 @@
 #include "../include/TensrOps.h"
 
+//***************************************************************Transpose
+template<typename T, DeviceType Device>
+Tensr<T, Device> transpose(const Tensr<T, Device>& t, const std::vector<size_t>& permute) {
+    if (permute.size() > t.rank()) {
+        throw std::runtime_error("Permute Cannot be bigger than Tensor shape");
+    }
+    for (size_t i = 0; i < permute.size() - 1; i++) {
+        if (permute[i] > t.shape().size() - 1) {
+            throw std::runtime_error("Index out of range");
+        }
+    }
+    std::vector<size_t> res_shape;
+    for (int i = 0; i < permute.size(); i++) {
+        res_shape = t.shape()[permute[i]];
+    }
+
+    std::vector<T> new_data(t.size());
+    for (int i = 0; i < t.size(); ++i) {
+        std::vector<size_t> old_multi_idx = t.unflatten_index_(i);
+
+        std::vector<size_t> new_multi_idx;
+        for (size_t p : permute) {
+            new_multi_idx.push_back(old_multi_idx[p]);
+        }
+
+        size_t new_flat_idx = flatten_index(new_multi_idx, res_shape);
+        new_data[new_flat_idx] = t.data()[i];
+    }
+
+    return Tensr<T, Device>(res_shape, new_data);
+}
+//****************************************************************END
 //***************************************************************Squeeze 
 template<typename T, DeviceType Device>
 Tensr<T, Device> squeeze(const Tensr<T, Device>& t) {
@@ -24,7 +56,7 @@ Tensr<T, Device> squeeze(const Tensr<T, Device>& t, int idx) {
         throw std::runtime_error("Index out of range.");
     }
     if (t.shape()[idx] != 1) {
-        throw std::runtime_error("VAlue at the index must be 1\n");
+        throw std::runtime_error("Value at the index must be 1");
     } 
     
     std::vector<size_t> res_shape;
@@ -36,9 +68,14 @@ Tensr<T, Device> squeeze(const Tensr<T, Device>& t, int idx) {
     }
 
     return t.reshape(res_shape);
-    
+
 }   
 //***************************************************************END
+
+//***************************************************************Unsqueeze
+
+//***************************************************************END
+
 //***************************************************************Operator (+)
 template<typename T, DeviceType Device>
 Tensr<T, Device> operator+(const Tensr<T, Device>& lVal, const Tensr<T, Device>& rVal){

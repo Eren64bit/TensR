@@ -2,6 +2,11 @@
 
 #include "Tensr.h"
 
+//***************************************************************Transpose
+template<typename T, DeviceType Device>
+Tensr<T, Device> transpose(const Tensr<T, Device>& t, const std::vector<size_t>&);
+//***************************************************************END
+
 //***************************************************************Squeeze 
 template<typename T, DeviceType Device>
 Tensr<T, Device> squeeze(const Tensr<T, Device>& t);

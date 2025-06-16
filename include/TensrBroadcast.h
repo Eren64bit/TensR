@@ -3,6 +3,8 @@
 #include "Tensr.h"
 #include <functional>
 
+//Remake TensrBroadcast.h
+
 template<typename T, DeviceType Device>
 std::vector<size_t> broadcast_shapes(const Tensr<T, Device>& l_t, const Tensr<T, Device>& r_t) {
     const auto& l_shape = l_t.shape();
@@ -39,7 +41,7 @@ Tensr<T, Device> broadcast_to(const Tensr<T, Device>& src, const std::vector<siz
 template<typename T, DeviceType Device>
 void broadcast_data(Tensr<T, Device>& source, Tensr<T, Device>& target) {
     for (size_t flat_idx = 0; flat_idx < target.size(); flat_idx++) {
-        std::vector<size_t> multi_idx = target.unflaten_index_(flat_idx);
+        std::vector<size_t> multi_idx = target.unflaten_index_(flat_idx); // fix unflatten idx
 
         size_t offset = multi_idx.size() - source.rank();
 
