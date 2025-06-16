@@ -1,11 +1,49 @@
 #include "../include/TensrOps.h"
 
+//***************************************************************Squeeze 
+template<typename T, DeviceType Device>
+Tensr<T, Device> squeeze(const Tensr<T, Device>& t) {
+    std::vector<T> dat = t.data();
+    std::vector<size_t> res_shape
+    for (int i = 0; i < t.shape().size(); i++) {
+        if (t.shape()[i] != 1) {
+            res_shape.push_back(t.shape()[i]);
+        }
+    }
 
+    if (res_shape == t.shape()) {
+        return t;
+    }
+
+    return t.reshape(res_shape);
+}
+
+template<typename T, DeviceType Device>
+Tensr<T, Device> squeeze(const Tensr<T, Device>& t, int idx) {    
+    if (idx >= t.shape().size()) {
+        throw std::runtime_error("Index out of range.");
+    }
+    if (t.shape()[idx] != 1) {
+        throw std::runtime_error("VAlue at the index must be 1\n");
+    } 
+    
+    std::vector<size_t> res_shape;
+
+    for (size_t i = 0; i < t.shape().size(); i++) {
+        if (i != idx) {
+            res_shape.push_back(t.shape()[i]);
+        }
+    }
+
+    return t.reshape(res_shape);
+    
+}   
+//***************************************************************END
 //***************************************************************Operator (+)
 template<typename T, DeviceType Device>
 Tensr<T, Device> operator+(const Tensr<T, Device>& lVal, const Tensr<T, Device>& rVal){
     if (lVal.shape().size() != rVal.shape().size()) {
-        throw std::runtime_error("error:Unmatched Tensor Shapes");
+        throw std::runtime_error("error:Unmatched Tensor Shapes\n");
     }
     Tensr<T, Device> result(lVal.shape());
     auto& res_data = result.mutable_data();

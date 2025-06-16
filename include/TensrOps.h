@@ -2,6 +2,19 @@
 
 #include "Tensr.h"
 
+//***************************************************************Squeeze 
+template<typename T, DeviceType Device>
+Tensr<T, Device> squeeze(const Tensr<T, Device>& t);
+
+template<typename T, DeviceType Device>
+Tensr<T, Device> squeeze(const Tensr<T, Device>& t, size_t idx);
+//***************************************************************END
+
+//***************************************************************Unsqueeze
+template<typename T, DeviceType Device>
+Tensr<T, Device> unsquezee();
+//***************************************************************END
+
 //***************************************************************Operator (+)
 template<typename T, DeviceType Device>
 Tensr<T, Device> operator+(const Tensr<T, Device>& lVal, const Tensr<T, Device>& rVal);
