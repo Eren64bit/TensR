@@ -39,4 +39,7 @@ public:
     const std::weak_ptr<T> data() override; 
     size_t size() const override { return total_size_; }
 
+    //at()
+    value_type& at(const std::vector<size_t>& indices);
+    const value_type& at(const std::vector<size_t>& indices) const;
 };

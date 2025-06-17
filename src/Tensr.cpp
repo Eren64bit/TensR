@@ -27,8 +27,9 @@ Tensr<T>::Tensr(std::vector<size_t> shape, std::vector<value_type> data)
 
 
 }
-//------------------Data()
-template<typename T>
-const std::weak_ptr<T> Tensr<T>::data() {
 
+//------------------at()
+template<typename T>
+T& Tensr<T>::at(const std::vector<size_t>& indices) {
+    
 }
