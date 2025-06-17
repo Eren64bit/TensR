@@ -1,17 +1,18 @@
 # Tensr
 
-Tensr is a lightweight, header-only C++ tensor library for numerical computing and machine learning. It supports N-dimensional arrays (tensors) with customizable data types and device backends (CPU, CUDA). The library provides basic tensor operations, broadcasting, shape and stride management, and safe element access.
+Tensr is a modern, extensible C++ tensor library designed for numerical computing and machine learning. This new version introduces **lazy evaluation** and **tensor views** (`TensrLens`), enabling efficient memory usage and high-performance operations on large, multi-dimensional arrays.
 
-## Features
+## Key Features
 
 - N-dimensional tensor support
 - Template-based for any arithmetic type
-- Device abstraction (CPU, CUDA)
+- Device abstraction (CPU, CUDA planned)
 - Shape, stride, and rank management
-- Broadcasting support (NumPy-style)
+- Broadcasting (NumPy-style)
 - Bounds-checked element access
-- Reshape functionality
-- Basic arithmetic operations (tensor-tensor and tensor-scalar addition)
+- Reshape and slicing functionality
+- **Lazy evaluation** for efficient computation and memory usage
+- **Tensor views** (`TensrLens`) for zero-copy slicing and broadcasting
 - Exception-safe API
 
 ## Getting Started
@@ -26,37 +27,31 @@ Tensr is a lightweight, header-only C++ tensor library for numerical computing a
 Tensr is header-only. Just include the headers in your project:
 
 ```cpp
-#include "include/Tensr.h"
-#include "include/TensrOps.h"
-#include "include/TensrBroadcast.h"
-#include "include/TensrMath.h"
+#include "tensr/Tensr.hpp"
+#include "tensr/TensrLens.hpp"
+#include "tensr/TensrOps.hpp"
+#include "tensr/TensrMath.hpp"
 ```
 
 ### Example Usage
 
 ```cpp
-#include "Tensr.h"
-#include "TensrOps.h"
-#include "TensrBroadcast.h"
-#include "TensrMath.h"
+#include "tensr/Tensr.hpp"
+#include "tensr/TensrLens.hpp"
 
 int main() {
     Tensr<float> a({2, 3}); // 2x3 tensor of floats, initialized to zero
-    Tensr<float> b({1, 3}, {1, 2, 3}); // 1x3 tensor with data
 
-    auto shape = broadcast_shapes(a, b); // Get broadcasted shape
-    auto a_bc = broadcast_to(a, shape);  // Broadcast a to shape
-    auto b_bc = broadcast_to(b, shape);  // Broadcast b to shape
+    // Lazy evaluation: operations are not computed until needed
+    auto b = a + 1.0f;      // No computation yet
+    float x = b.at({0, 1}); // Computation happens here
 
-    auto c = a_bc + b_bc;                // Tensor-tensor addition (broadcasted)
-    auto d = b + 10.0f;                  // Tensor-scalar addition
+    // Tensor view (TensrLens): zero-copy slicing
+    TensrLens<float> view = a.slice({0}); // View of the first row
 
-    a.at({0, 1}) = 5.0f;                 // Set element at (0,1)
-    float value = a.at({0, 1});          // Get element at (0,1)
-
-    a.reshape({3, 2});                   // Reshape to 3x2
-
-    auto s = sigmoid(a);                 // Elementwise sigmoid
+    // Broadcasting with lazy evaluation
+    Tensr<float> c({1, 3}, {1, 2, 3});
+    auto d = a + c; // Broadcasted addition, computed lazily
 
     return 0;
 }
@@ -64,25 +59,29 @@ int main() {
 
 ## API Overview
 
-- `Tensr<T, DeviceType Device = DeviceType::CPU>`: Main tensor class template
-- `Tensr(std::vector<size_t> shape)`: Construct tensor with given shape, zero-initialized
-- `Tensr(std::vector<size_t> shape, std::vector<T> data)`: Construct tensor with shape and data
+- `Tensr<T>`: Main tensor class template
+- `TensrLens<T>`: Tensor view for zero-copy slicing and broadcasting
+- `Tensr<T> operator+(const Tensr<T>&, const Tensr<T>&)`: Lazy, broadcasted addition
+- `Tensr<T> operator+(const Tensr<T>&, Scalar)`: Lazy, broadcasted addition with scalar
 - `T& at(const std::vector<size_t>& indices)`: Access element (with bounds checking)
 - `void reshape(std::vector<size_t> new_shape)`: Change tensor shape (total size must match)
 - `size_t size() const`: Total number of elements
 - `size_t rank() const`: Number of dimensions
 - `const std::vector<size_t>& shape() const`: Get shape
-- `const std::vector<T>& data() const`: Get raw data
-- `Tensr<T, Device> operator+(const Tensr<T, Device>&, const Tensr<T, Device>&)`: Tensor-tensor addition
-- `Tensr<T, Device> operator+(const Tensr<T, Device>&, Scalar)`: Tensor-scalar addition
-- `std::vector<size_t> broadcast_shapes(const Tensr<T, Device>&, const Tensr<T, Device>&)`: Get broadcasted shape
-- `Tensr<T, Device> broadcast_to(Tensr<T, Device>&, std::vector<size_t>)`: Broadcast tensor to shape
-- `Tensr<T, Device> sigmoid(const Tensr<T, Device>&)`: Elementwise sigmoid
+- `const std::shared_ptr<T>& data() const`: Get raw data pointer
+
+## Lazy Evaluation
+
+All arithmetic operations are evaluated lazily. Computation is only performed when you access the data (e.g., via `at()` or when explicitly requested). This enables efficient chaining of operations and avoids unnecessary intermediate memory allocations.
+
+## Tensor Views (`TensrLens`)
+
+`TensrLens` provides zero-copy views into tensors, allowing efficient slicing, broadcasting, and sub-tensor operations without duplicating data.
 
 ## Device Support
 
-- `DeviceType::CPU`: Standard CPU memory
-- `DeviceType::CUDA`: (Planned) CUDA device support
+- `CPU`: Standard CPU memory
+- `CUDA`: (Planned) CUDA device support
 
 ## Contributing
 
