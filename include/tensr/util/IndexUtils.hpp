@@ -4,7 +4,7 @@
 
 
 template<typename T>
-size_t Flat_index(const std::vector<size_t>& indices, const std::vector<size_t>& shape, std::vector<size_t>& stride, size_t rank) {
+size_t flat_index(const std::vector<size_t>& indices, const std::vector<size_t>& shape, std::vector<size_t>& stride, size_t rank) {
     if (indices.size() > rank) {
         throw std::runtime_error("error:Index dimensionality does not match tensor rank");
     }
@@ -24,6 +24,12 @@ size_t Flat_index(const std::vector<size_t>& indices, const std::vector<size_t>&
     return result;
 }
 
-std::vector<size_t> Unflaten_index(const std::vector<size_t>& indices, const std::vector<size_t>& shape, std::vector<size_t>& stride, size_t rank) {
+std::vector<size_t> unflaten_index(const size_t idx, std::vector<size_t>& stride, size_t rank) {
     std::vector<size_t> unflat_idx(rank);
+    size_t idx_rem = idx;
+    for (int i = 0; i < rank; i++) {
+        unflat_idx[i] = idx_rem / stride[i];
+        idx_rem %= stride[i];
+    }
+    return unflat_idx;
 }
