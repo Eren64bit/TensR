@@ -18,7 +18,7 @@ public:
 template<typename T>
 class Tensr : public TensrBase<T> { 
 private:
-    std::vector<T> data_;
+    std::shared_ptr<std::vector<T>> data_ptr_;
 
     std::vector<size_t> shape_;
     std::vector<size_t> stride_;
@@ -35,8 +35,8 @@ public:
     explicit Tensr(std::vector<size_t> shape);
     Tensr(std::vector<size_t> shape, std::vector<value_type> data);
 
-    const std::vector<size_t>& shape() const override;
-    const std::weak_ptr<T> data() override; 
+    const std::vector<size_t>& shape() const override { return shape_; }
+    const std::weak_ptr<std::vector<T>> data() override { return data_ptr_; }
     size_t size() const override { return total_size_; }
 
     //at()
