@@ -26,3 +26,9 @@ template<typename T>
 inline int compute_rank(const std::vector<size_t>& shape) {
     return shape.size();
 }
+
+
+template<typename T>
+int reshape() {
+
+}
