@@ -10,6 +10,7 @@ public:
     virtual std::weak_ptr<std::vector<T>> mutable_data() = 0;
 
     virtual const std::vector<size_t>& shape() const = 0;
+    virtual const std::vector<size_t>& stride() const = 0;s
     virtual size_t size() const = 0;
 
     virtual std::vector<size_t> unflatten_index_(size_t index) const = 0; 
@@ -36,10 +37,15 @@ public:
     Tensr(std::vector<size_t> shape, std::vector<value_type> data);
 
     const std::vector<size_t>& shape() const override { return shape_; }
+    const std::vector<size_t>& stride() const override { return stride_; }
     const std::weak_ptr<std::vector<T>> data() override { return data_ptr_; }
     size_t size() const override { return total_size_; }
 
     //at()
     value_type& at(const std::vector<size_t>& indices);
     const value_type& at(const std::vector<size_t>& indices) const;
+
+    //setter functions
+    void set_shape(const std::vector<size_t> shape) { this->shape_ = shape; }
+    void set_stride(const std::vector<size_t> stride) { this->stride = stride; }
 };
