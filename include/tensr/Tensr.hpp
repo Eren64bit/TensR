@@ -13,7 +13,6 @@ public:
     virtual const std::vector<size_t>& stride() const = 0;s
     virtual size_t size() const = 0;
 
-    virtual std::vector<size_t> unflatten_index_(size_t index) const = 0; 
 };
 
 template<typename T>
@@ -39,6 +38,7 @@ public:
     const std::vector<size_t>& shape() const override { return shape_; }
     const std::vector<size_t>& stride() const override { return stride_; }
     const std::weak_ptr<std::vector<T>> data() override { return data_ptr_; }
+    std::weak_ptr<std::vector<T>> mutable_data() override { return data_ptr_; }
     size_t size() const override { return total_size_; }
 
     //at()

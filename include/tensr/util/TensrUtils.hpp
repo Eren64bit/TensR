@@ -31,7 +31,7 @@ inline int compute_rank(const std::vector<size_t>& shape) {
 
 template<typename TensorType>
 void reshape(TensorType& tensor, const std::vector<size_t>& new_shape) {
-    if (! TensrTraits<TensorType>::is_contiguous(tensor)) {
+    if (!TensrTraits<TensorType>::is_contiguous(tensor)) {
         throw std::runtime_error("Cannot reshape non-contiguous tensor");
     }
 
