@@ -19,10 +19,14 @@ struct TensrTraits<Tensr<T>> {
         return t.stride() == compute_strides(t.shape());
     }
 
+    //--------------------------------Reshape
     static void reshape(Tensr<T>& t, const std::vector<size_t>& shape) {
         t.set_shape(shape);
         t.set_stride(compute_strides(shape));
     }
+
+    
+    //--------------------------------Squeeze
     static void squeeze(Tensr<T>& t) {
         std::vector<size_t> new_shape;
         for (size_t i : t.shape()) {
@@ -47,7 +51,8 @@ struct TensrTraits<Tensr<T>> {
         t.set_shape(new_shape);
         t.set_stride(compute_strides(new_shape));
     }
-    
+
+    //--------------------------------Unsqueeze
     static void unsqueeze(Tensr<T>& t, int axis) {
         if (axis < 0 || axis > t.shape().size()) {
             throw std::runtime_error("Axis out of range");
