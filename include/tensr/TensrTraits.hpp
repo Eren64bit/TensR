@@ -3,6 +3,7 @@
 #include "Tensr.hpp"
 #include "Lens.hpp"
 #include "util/TensrUtils.hpp"
+#include "ops/Broadcast.hpp"
 #include <algorithm>
 
 template <typename T>
@@ -17,6 +18,16 @@ struct TensrTraits<Tensr<T>> {
 
     static bool is_contiguous(const Tensr<T>& t) {
         return t.stride() == compute_strides(t.shape());
+    }
+    //--------------------------------Broadcast_to
+    static TensrLens<T> broadcasto_to(const Tensr<T>& t, const std::vector<size_t> target_shape) {
+        std::vector<size_t> common_shape = compute_broadcast_shape(t.shape(), target_shape);
+
+        TensrLens<T> lens;
+
+        lens.set_shape(common_shape);
+        lens.set_stride(compute_strides(common_shape));
+
     }
 
     //--------------------------------Reshape
@@ -69,6 +80,8 @@ struct TensrTraits<Tensr<T>> {
         t.set_shape(new_shape);
         t.set_stride(compute_strides(new_shape));
     }
+
+
 };
 
 template <typename T>
