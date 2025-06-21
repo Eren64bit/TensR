@@ -20,13 +20,12 @@ struct TensrTraits<Tensr<T>> {
         return t.stride() == compute_strides(t.shape());
     }
     //--------------------------------Broadcast_to
-    static TensrLens<T> broadcasto_to(const Tensr<T>& t, const std::vector<size_t> target_shape) {
+    static TensrLens<T> broadcas_to(const Tensr<T>& t, const std::vector<size_t> target_shape) { // fix
         std::vector<size_t> common_shape = compute_broadcast_shape(t.shape(), target_shape);
 
         TensrLens<T> lens;
-
-        lens.set_shape(common_shape);
-        lens.set_stride(compute_strides(common_shape));
+        
+        
 
     }
 

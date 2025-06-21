@@ -4,7 +4,8 @@
 #include "../Lens.hpp"
 #include <vector>
 #include <stdexcept>
-
+#include <assert.h>
+#include <stdio.h>
 
 bool can_broadcast(const std::vector<size_t>& shape1, const std::vector<size_t>& shape2) {
     const size_t max_rank = std::max(shape1.size(), shape2.size());
@@ -41,4 +42,31 @@ std::vector<size_t> compute_broadcast_shape(const std::vector<size_t>& shape1, c
     } else {
         throw std::runtime_error("Cannot broadcast");
     }
+}
+
+std::vector<size_t> compute_broadcast_stride(const std::vector<size_t>& orig_shape, const std::vector<size_t>& orig_stride, const std::vector<size_t>& target_shape) {
+    assert(orig_stride.size() == orig_shape.size());
+
+    std::vector<size_t> computed_stride;
+    computed_stride.reserve(target_shape.size());
+    auto ito = orig_shape.rbegin(), itt = target_shape.rbegin(), its = orig_stride.rbegin();
+    while (ito != orig_shape.rend() && itt != target_shape.rend()) {
+        if (*ito == *itt) {
+            computed_stride.push_back(*its);
+        } else if(*ito == 1 && *itt > 1) {
+            computed_stride.push_back(0);
+        } else {
+            throw std::runtime_error("Unexpected Shape value");
+        }
+
+
+        ++ito, ++itt, ++its;
+    }
+
+    while (itt != target_shape.rend()) {
+        computed_stride.push_back(0);
+        ++itt;
+    }
+    std::reverse(computed_stride.begin(), computed_stride.end());
+    return computed_stride;
 }
