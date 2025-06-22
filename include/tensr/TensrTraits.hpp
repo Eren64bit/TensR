@@ -6,6 +6,16 @@
 #include "ops/Broadcast.hpp"
 #include <algorithm>
 
+inline std::vector<size_t> compute_strides(const std::vector<size_t>& shape) {
+    std::vector<size_t> strides(shape.size());
+    size_t stride = 1;
+    for (int i = static_cast<int>(shape.size()) - 1; i >= 0; --i) {
+        strides[i] = stride;
+        stride *= shape[i];
+    }
+    return strides;
+}
+
 template <typename T>
 struct TensrTraits;
 
@@ -23,7 +33,7 @@ struct TensrTraits<Tensr<T>> {
     //--------------------------------Reshape
     static void reshape(Tensr<T>& t, const std::vector<size_t>& shape) {
         t.set_shape(shape);
-        t.set_stride(::compute_strides(shape));
+        t.set_stride(compute_strides(shape));
     }
 
     
@@ -38,7 +48,7 @@ struct TensrTraits<Tensr<T>> {
             }
         }
         t.set_shape(new_shape);
-        t.set_stride(::compute_strides(new_shape));
+        t.set_stride(compute_strides(new_shape));
     }
 
     static void squeeze(Tensr<T>& t, int axis) {
@@ -50,7 +60,7 @@ struct TensrTraits<Tensr<T>> {
             new_shape.push_back(t.shape()[i]);
         }
         t.set_shape(new_shape);
-        t.set_stride(::compute_strides(new_shape));
+        t.set_stride(compute_strides(new_shape));
     }
 
     //--------------------------------Unsqueeze
@@ -68,7 +78,7 @@ struct TensrTraits<Tensr<T>> {
             }
         }
         t.set_shape(new_shape);
-        t.set_stride(::compute_strides(new_shape));
+        t.set_stride(compute_strides(new_shape));
     }
 
 
