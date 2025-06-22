@@ -1,8 +1,8 @@
 #pragma once
 
+#include "util/TensrUtils.hpp"
 #include "Tensr.hpp"
 #include "Lens.hpp"
-#include "util/TensrUtils.hpp"
 #include "ops/Broadcast.hpp"
 #include <algorithm>
 
@@ -23,7 +23,7 @@ struct TensrTraits<Tensr<T>> {
     //--------------------------------Reshape
     static void reshape(Tensr<T>& t, const std::vector<size_t>& shape) {
         t.set_shape(shape);
-        t.set_stride(compute_strides(shape));
+        t.set_stride(::compute_strides(shape));
     }
 
     
@@ -38,7 +38,7 @@ struct TensrTraits<Tensr<T>> {
             }
         }
         t.set_shape(new_shape);
-        t.set_stride(compute_strides(new_shape));
+        t.set_stride(::compute_strides(new_shape));
     }
 
     static void squeeze(Tensr<T>& t, int axis) {
@@ -50,7 +50,7 @@ struct TensrTraits<Tensr<T>> {
             new_shape.push_back(t.shape()[i]);
         }
         t.set_shape(new_shape);
-        t.set_stride(compute_strides(new_shape));
+        t.set_stride(::compute_strides(new_shape));
     }
 
     //--------------------------------Unsqueeze
@@ -68,7 +68,7 @@ struct TensrTraits<Tensr<T>> {
             }
         }
         t.set_shape(new_shape);
-        t.set_stride(compute_strides(new_shape));
+        t.set_stride(::compute_strides(new_shape));
     }
 
 

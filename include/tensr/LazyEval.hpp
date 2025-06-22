@@ -56,7 +56,7 @@ Tensr<T> evaluate(const std::shared_ptr<TensrExpr<T>>& expr) {
     size_t total_size = compute_total_size(expr->shape());
 
     for (size_t flat = 0; flat < total_size; ++flat) {
-        auto multi_idx = unflaten_index(flat, stride, expr->shape());
+        auto multi_idx = unflaten_index(flat, expr->shape());
         result.at(multi_idx) = expr->eval(multi_idx);
     }
 

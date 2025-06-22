@@ -3,6 +3,9 @@
 
 #include "../Tensr.hpp"
 #include "../TensrTraits.hpp"
+#include <algorithm>
+
+inline std::vector<size_t> compute_strides(const std::vector<size_t>& shape);
 
 inline std::vector<size_t> compute_strides(const std::vector<size_t>& shape) {
     std::vector<size_t> strides(shape.size());
@@ -24,7 +27,7 @@ inline size_t compute_total_size(const std::vector<size_t> shape) {
     if (shape.empty()) {
         throw std::invalid_argument("Tensor shape cannot be empty"); //replace with Error class
     }
-    return std::accumulate(shape.begin(), shape.end(), size_t(1), std::multiplies<size_t>);
+    return std::accumulate(shape.begin(), shape.end(), size_t(1), std::multiplies<size_t>());
 }
 
 template<typename TensorType>
