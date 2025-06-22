@@ -19,7 +19,13 @@ public:
 
     TensrLens(std::shared_ptr<std::vector<T>> data_ptr, std::vector<size_t> shape, std::vector<size_t> stride, size_t offset);
 
-    const std::weak_ptr<std::vector<T>> data() const override { return *data_; }
+    const std::weak_ptr<std::vector<T>> data() const override {
+        return data_;
+    }
+
+    std::weak_ptr<std::vector<T>> mutable_data() override {
+        return data_.lock();
+    }
     const std::vector<size_t>& shape() const override { return shape_; }
     const std::vector<size_t>& stride() const override { return stride_; }
 

@@ -12,8 +12,8 @@ struct TensrTraits;
 
 template <typename T>
 struct TensrTraits<Tensr<T>> {
-    static bool is_squeezable(Tensr& t) {
-        return std::any_of(t.shape().start(), t.shape().end(), [](size_t dim) { return dim == 1; });
+    static bool is_squeezable(Tensr<T>& t) {
+        return std::any_of(t.shape().begin(), t.shape().end(), [](size_t dim) { return dim == 1; });
     }
 
     static bool is_contiguous(const Tensr<T>& t) {
@@ -76,7 +76,7 @@ struct TensrTraits<Tensr<T>> {
 
 template <typename T>
 struct TensrTraits<TensrLens<T>> {
-    static bool is_squeezable(TensrLens& t) {
+    static bool is_squeezable(TensrLens<T>& t) {
         return std::any_of(t.shape().begin(), t.shape().end(), [](size_t dim) { return dim == 1; });
     }
 

@@ -1,0 +1,1 @@
+/usr/bin/c++ -Wl,--dependency-file=CMakeFiles/tensr_test.dir/link.d CMakeFiles/tensr_test.dir/tests/main.cpp.o -o tensr_test

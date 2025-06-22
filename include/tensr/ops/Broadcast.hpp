@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <assert.h>
 #include <stdio.h>
+#include <algorithm>
 
 bool can_broadcast(const std::vector<size_t>& shape1, const std::vector<size_t>& shape2) {
     const size_t max_rank = std::max(shape1.size(), shape2.size());

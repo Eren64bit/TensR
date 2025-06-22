@@ -4,15 +4,6 @@
 #include "../Tensr.hpp"
 #include "../TensrTraits.hpp"
 
-template<typename T>
-inline size_t compute_total_size(const std::vector<size_t> shape) {
-    if (shape.empty()) {
-        throw std::invalid_argument("Tensor shape cannot be empty"); //replace with Error class
-    }
-    return std::accumulate(shape.begin(), shape.end(), size_t(1), std::multiplies<size_t>);
-}
-
-
 inline std::vector<size_t> compute_strides(const std::vector<size_t>& shape) {
     std::vector<size_t> strides(shape.size());
     size_t stride = 1;
@@ -28,6 +19,13 @@ inline int compute_rank(const std::vector<size_t>& shape) {
     return shape.size();
 }
 
+
+inline size_t compute_total_size(const std::vector<size_t> shape) {
+    if (shape.empty()) {
+        throw std::invalid_argument("Tensor shape cannot be empty"); //replace with Error class
+    }
+    return std::accumulate(shape.begin(), shape.end(), size_t(1), std::multiplies<size_t>);
+}
 
 template<typename TensorType>
 void reshape(TensorType& tensor, const std::vector<size_t>& new_shape) {
@@ -54,4 +52,9 @@ void squeeze(TensorType& tensor, int axis) {
     } else {
         throw std::runtime_error("Cannot Squeeze");
     }
+}
+
+template<typename TensorType>
+void unSqueeze(TensorType& tensor, int axis) {
+    TensrTraits<TensorType>::unsqueeze(tensor, axis);
 }

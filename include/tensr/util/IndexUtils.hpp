@@ -24,7 +24,7 @@ size_t flat_index(const std::vector<size_t>& indices, const std::vector<size_t>&
     return result;
 }
 
-std::vector<size_t> unflaten_index(const size_t idx, std::vector<size_t>& shape) {
+std::vector<size_t> unflaten_index(size_t idx, const std::vector<size_t>& shape) {
     std::vector<size_t> unflat_idx(shape.size());
     std::vector<size_t> stride = compute_strides(shape);
     size_t idx_rem = idx;
