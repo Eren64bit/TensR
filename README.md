@@ -1,6 +1,6 @@
 # Tensr
 
-Tensr is a modern, extensible C++ tensor library designed for numerical computing and machine learning. This new version introduces **lazy evaluation** and **tensor views** (`TensrLens`), enabling efficient memory usage and high-performance operations on large, multi-dimensional arrays.
+Tensr is a modern, extensible C++ tensor library for numerical computing and machine learning. This version supports **lazy evaluation**, **tensor views** (`TensrLens`), and robust broadcasting, enabling efficient memory usage and high-performance operations on large, multi-dimensional arrays.
 
 ## Key Features
 
@@ -8,9 +8,9 @@ Tensr is a modern, extensible C++ tensor library designed for numerical computin
 - Template-based for any arithmetic type
 - Device abstraction (CPU, CUDA planned)
 - Shape, stride, and rank management
-- Broadcasting (NumPy-style)
+- NumPy-style broadcasting
 - Bounds-checked element access
-- Reshape and slicing functionality
+- Reshape, squeeze, and unsqueeze functionality
 - **Lazy evaluation** for efficient computation and memory usage
 - **Tensor views** (`TensrLens`) for zero-copy slicing and broadcasting
 - Exception-safe API
@@ -28,30 +28,34 @@ Tensr is header-only. Just include the headers in your project:
 
 ```cpp
 #include "tensr/Tensr.hpp"
-#include "tensr/TensrLens.hpp"
-#include "tensr/TensrOps.hpp"
-#include "tensr/TensrMath.hpp"
+#include "tensr/Lens.hpp"
+#include "tensr/ops/Arithmetic.hpp"
+#include "tensr/ops/Broadcast.hpp"
+#include "tensr/util/TensrUtils.hpp"
+#include "tensr/util/IndexUtils.hpp"
 ```
 
 ### Example Usage
 
 ```cpp
 #include "tensr/Tensr.hpp"
-#include "tensr/TensrLens.hpp"
+#include "tensr/Lens.hpp"
+#include "tensr/ops/Arithmetic.hpp"
 
 int main() {
     Tensr<float> a({2, 3}); // 2x3 tensor of floats, initialized to zero
+    Tensr<float> b({1, 3}, {1, 2, 3}); // 1x3 tensor with data
 
-    // Lazy evaluation: operations are not computed until needed
-    auto b = a + 1.0f;      // No computation yet
-    float x = b.at({0, 1}); // Computation happens here
+    // Broadcasting and binary operation (elementwise addition)
+    auto c = binary_op<float>(a, b, [](float x, float y) { return x + y; });
 
     // Tensor view (TensrLens): zero-copy slicing
     TensrLens<float> view = a.slice({0}); // View of the first row
 
-    // Broadcasting with lazy evaluation
-    Tensr<float> c({1, 3}, {1, 2, 3});
-    auto d = a + c; // Broadcasted addition, computed lazily
+    // Reshape, squeeze, unsqueeze
+    a.reshape({3, 2});
+    a.squeeze();
+    a.unsqueeze(0);
 
     return 0;
 }
@@ -61,14 +65,16 @@ int main() {
 
 - `Tensr<T>`: Main tensor class template
 - `TensrLens<T>`: Tensor view for zero-copy slicing and broadcasting
-- `Tensr<T> operator+(const Tensr<T>&, const Tensr<T>&)`: Lazy, broadcasted addition
-- `Tensr<T> operator+(const Tensr<T>&, Scalar)`: Lazy, broadcasted addition with scalar
+- `Tensr<T> binary_op(const TensorA&, const TensorB&, BinaryOp)`: Generic binary operation with broadcasting
 - `T& at(const std::vector<size_t>& indices)`: Access element (with bounds checking)
-- `void reshape(std::vector<size_t> new_shape)`: Change tensor shape (total size must match)
+- `void reshape(const std::vector<size_t>& new_shape)`: Change tensor shape (total size must match)
+- `void squeeze()`: Remove dimensions of size 1
+- `void unsqueeze(int axis)`: Add a dimension of size 1 at the given axis
 - `size_t size() const`: Total number of elements
 - `size_t rank() const`: Number of dimensions
 - `const std::vector<size_t>& shape() const`: Get shape
-- `const std::shared_ptr<T>& data() const`: Get raw data pointer
+- `const std::vector<size_t>& stride() const`: Get strides
+- `const std::shared_ptr<std::vector<T>>& data() const`: Get raw data pointer
 
 ## Lazy Evaluation
 
