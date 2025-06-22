@@ -26,6 +26,16 @@ public:
     value_type& at(const std::vector<size_t>& indices);
     const value_type& at(const std::vector<size_t>& indices) const;
 
+    value_type& at_flat(size_t flat_index) {
+        auto shared_data = data_.lock();
+        return (*shared_data)[offset_ + flat_index];
+    }
+
+    const value_type& at_flat(size_t flat_index) const {
+        auto shared_data = data_.lock();
+        return (*shared_data)[offset_ + flat_index];
+    }
+
     void set_data(const std::shared_ptr<std::vector<size_t>> data_ptr) { this->data_ = std::move(data_ptr); }
     void set_shape(const std::vector<size_t> shape) { this->shape_ = shape; }
     void set_stride(const std::vector<size_t> stride) { this->stride_ = stride; }
