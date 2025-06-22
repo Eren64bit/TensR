@@ -19,15 +19,6 @@ struct TensrTraits<Tensr<T>> {
     static bool is_contiguous(const Tensr<T>& t) {
         return t.stride() == compute_strides(t.shape());
     }
-    //--------------------------------Broadcast_to
-    static TensrLens<T> broadcas_to(const Tensr<T>& t, const std::vector<size_t> target_shape) { // fix
-        std::vector<size_t> common_shape = compute_broadcast_shape(t.shape(), target_shape);
-
-        TensrLens<T> lens;
-        
-        
-
-    }
 
     //--------------------------------Reshape
     static void reshape(Tensr<T>& t, const std::vector<size_t>& shape) {

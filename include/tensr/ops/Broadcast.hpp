@@ -70,3 +70,13 @@ std::vector<size_t> compute_broadcast_stride(const std::vector<size_t>& orig_sha
     std::reverse(computed_stride.begin(), computed_stride.end());
     return computed_stride;
 }
+
+template<typename T>
+TensrLens<T> broadcast_to(const Tensr<T>& t, const std::vector<size_t> target_shape) { 
+    std::vector<size_t> common_shape = compute_broadcast_shape(t.shape(), target_shape);
+    std::vector<size_t> computed_stride = compute_broadcast_stride(t.shape(), t.stride(), common_shape);
+
+    TensrLens<T> lens(t.data(), common_shape, computed_stride, (size_t)0);
+        
+    return lens;
+}

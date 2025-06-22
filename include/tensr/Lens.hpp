@@ -26,6 +26,9 @@ public:
     value_type& at(const std::vector<size_t>& indices);
     const value_type& at(const std::vector<size_t>& indices) const;
 
+    void set_data(const std::shared_ptr<std::vector<size_t>> data_ptr) { this->data_ = std::move(data_ptr); }
     void set_shape(const std::vector<size_t> shape) { this->shape_ = shape; }
-    void set_stride(const std::vector<size_t> stride) { this->stride = stride; }
+    void set_stride(const std::vector<size_t> stride) { this->stride_ = stride; }
+    void set_offset(const size_t offset) { this->offset_ = offset; }
+    
 };
