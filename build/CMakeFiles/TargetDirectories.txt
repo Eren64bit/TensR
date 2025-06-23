@@ -1,3 +1,0 @@
-/home/eren/Desktop/Tensr/build/CMakeFiles/tensr_test.dir
-/home/eren/Desktop/Tensr/build/CMakeFiles/edit_cache.dir
-/home/eren/Desktop/Tensr/build/CMakeFiles/rebuild_cache.dir
