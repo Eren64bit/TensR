@@ -36,8 +36,8 @@ private:
     
 public:
 
-    explicit Tensr();
-    Tensr();
+    explicit Tensr(std::vector<size_t>& shape);
+    Tensr(const std::vector<size_t>& shape, const std::vector<T>& data);
 
     const std::weak_ptr<std::vector<size_t>> data() const override { return data_ptr_; } // return data_ptr make sure before use it, Dereference it
 
@@ -54,11 +54,11 @@ public:
     const T& at();
     //------------------------------------------------------Setter functions
     void set_data();
-    void set_shape();
-    void set_stride();
-    void set_total_size();
-    void set_rank();
-    void set_offset();
+    void set_shape(const std::vector<size_t>& tshape);
+    void set_stride(const std::vector<size_t>& tstride) { stride_ = tstride; }
+    void set_total_size(const size_t& tsize) { total_size_ = tsize; }
+    void set_rank(const size_t& trank) { rank_ = trank; }
+    void set_offset(const size_t& toffset) { offset_ = toffset; }
 };
 
 }
