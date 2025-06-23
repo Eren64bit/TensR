@@ -3,25 +3,27 @@
 #include <memory>
 #include <vector>
 
+#include "TensrUtils.hpp"
+
 namespace tensr {
 
 template<typename T>
 class TensrBase {
 public:
-    virtual const std::weak_ptr<std::vector<T>> data() const = 0; // return weak pointer to tensor data
+    virtual std::weak_ptr<std::vector<T>> data() const = 0; // return weak pointer to tensor data
 
     virtual const std::vector<size_t> shape() const = 0; // return tensor or lens shape
     virtual const std::vector<size_t> stride() const = 0; // return tensor or lens stride
 
-    virtual const size_t size() const = 0; // return tensor or lens total size
+    virtual size_t size() const = 0; // return tensor or lens total size
 
-    virtual const size_t rank() const = 0; // return tensor or lens rank(Shape size)
-    virtual const size_t offset() const = 0; // return tensor or lens offset(distance from 0 index data)
+    virtual size_t rank() const = 0; // return tensor or lens rank(Shape size)
+    virtual size_t offset() const = 0; // return tensor or lens offset(distance from 0 index data)
     virtual ~TensrBase() = default; // virtual destructor for base class
 };
 
 template<typename T>
-class Tensr : public TensrBase {
+class Tensr : public TensrBase<T> {
 private:
     std::shared_ptr<std::vector<T>> data_ptr_; // data pointer to real data 
 
@@ -36,7 +38,7 @@ private:
     
 public:
 
-    explicit tensr::Tensr<T>::Tensr(const std::vector<size_t>& shape) : shape_(std::move(shape)) {
+    explicit Tensr(const std::vector<size_t>& shape) : shape_(std::move(shape)) {
         stride_ = compute_strides(shape);
         total_size_ = compute_total_size(shape);
         rank_ = compute_rank(shape);
@@ -45,7 +47,7 @@ public:
         std::fill(data_ptr_->begin(), data_ptr_->end(), 0);
     }
 
-    tensr::Tensr<T>::Tensr(const std::vector<size_t>& shape, const std::vector<T>& data) : shape_(std::move(shape)) {
+    Tensr(const std::vector<size_t>& shape, const std::vector<T>& data) : shape_(std::move(shape)) {
 	    stride_ = compute_strides(shape);
         total_size_ = compute_total_size(shape);
         rank_ = compute_rank(shape);
@@ -57,15 +59,15 @@ public:
         }
     }
 
-    const std::weak_ptr<std::vector<size_t>> data() const override { return data_ptr_; } // return data_ptr make sure before use it, Dereference it
+    std::weak_ptr<std::vector<T>> data() const override { return data_ptr_; } // return data_ptr make sure before use it, Dereference it
 
     const std::vector<size_t> shape() const override { return shape_; } // return size_t vector shape
     const std::vector<size_t> stride() const override { return stride_; } // return size_t vector stride
 
-    const size_t size() const override { return total_size_; } // return size_t total size
+    size_t size() const override { return total_size_; } // return size_t total size
 
-    const size_t rank() const override { return rank_; } // return size_t rank (shape size)
-    const size_t offset() const override { return offset_; } // return size_t offset 
+    size_t rank() const override { return rank_; } // return size_t rank (shape size)
+    size_t offset() const override { return offset_; } // return size_t offset 
 
     //------------------------------------------------------At functions
     T& at(const std::vector<size_t> idx);
