@@ -17,7 +17,7 @@ public:
 
     virtual const size_t rank() const = 0; // return tensor or lens rank(Shape size)
     virtual const size_t offset() const = 0; // return tensor or lens offset(distance from 0 index data)
-
+    virtual ~TensrBase() = default; // virtual destructor for base class
 };
 
 template<typename T>
@@ -36,8 +36,26 @@ private:
     
 public:
 
-    explicit Tensr(std::vector<size_t>& shape);
-    Tensr(const std::vector<size_t>& shape, const std::vector<T>& data);
+    explicit tensr::Tensr<T>::Tensr(const std::vector<size_t>& shape) : shape_(std::move(shape)) {
+        stride_ = compute_strides(shape);
+        total_size_ = compute_total_size(shape);
+        rank_ = compute_rank(shape);
+
+        data_ptr_ = std::make_shared<std::vector<T>>(total_size_);
+        std::fill(data_ptr_->begin(), data_ptr_->end(), 0);
+    }
+
+    tensr::Tensr<T>::Tensr(const std::vector<size_t>& shape, const std::vector<T>& data) : shape_(std::move(shape)) {
+	    stride_ = compute_strides(shape);
+        total_size_ = compute_total_size(shape);
+        rank_ = compute_rank(shape);
+
+        data_ptr_ = std::make_shared<std::vector<T>>(std::move(data));
+
+        if (data_ptr_->size() != total_size_) {
+            throw std::runtime_error("Data and Total size does not match up");
+        }
+    }
 
     const std::weak_ptr<std::vector<size_t>> data() const override { return data_ptr_; } // return data_ptr make sure before use it, Dereference it
 
@@ -50,8 +68,8 @@ public:
     const size_t offset() const override { return offset_; } // return size_t offset 
 
     //------------------------------------------------------At functions
-    T& at();
-    const T& at();
+    T& at(const std::vector<size_t> idx);
+    const T& at(const std::vector<size_t> idx) const;
     //------------------------------------------------------Setter functions
     void set_data();
     void set_shape(const std::vector<size_t>& tshape);
