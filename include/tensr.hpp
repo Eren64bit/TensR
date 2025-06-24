@@ -20,6 +20,10 @@ public:
 
     virtual size_t rank() const = 0; // return tensor or lens rank(Shape size)
     virtual size_t offset() const = 0; // return tensor or lens offset(distance from 0 index data)
+
+    T& at(const std::vector<size_t>& indices) = 0;
+    const T& at(const std::vector<size_t>& indices) const = 0;
+
     virtual ~TensrBase() = default; // virtual destructor for base class
 };
 
@@ -71,11 +75,11 @@ public:
     size_t offset() const override { return offset_; } // return size_t offset 
 
     //------------------------------------------------------At functions
-    T& at(const std::vector<size_t>& indices) {
+    T& at(const std::vector<size_t>& indices) override {
         size_t flat_index = indexUtils::flat_index(indices, shape_, stride_);
         return (*data_ptr_)[flat_index];
     }
-    const T& at(const std::vector<size_t>& indices) const {
+    const T& at(const std::vector<size_t>& indices) const override {
         size_t flat_index = indexUtils::flat_index(indices, shape_, stride_);
         return (*data_ptr_)[flat_index];
     }
