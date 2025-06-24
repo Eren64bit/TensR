@@ -1,5 +1,6 @@
 #include <iostream>
 #include "include/tensr.hpp"
+#include "include/tensrLens.hpp"
 
 int main() {
     // İlk tensor testi
@@ -37,6 +38,36 @@ int main() {
     std::cout << "t2.at({0,1}): " << t2.at({0, 1}) << std::endl;
     std::cout << "t2.at({1,0}): " << t2.at({1, 0}) << std::endl;
     std::cout << "t2.at({1,1}): " << t2.at({1, 1}) << std::endl;
+
+    std::vector<size_t> shape123 = {2, 3};
+    tensr::Tensr<int> t9(shape123);
+
+    // Veriye değer ata
+    t9.at({0, 0}) = 10;
+    t9.at({0, 1}) = 20;
+    t9.at({1, 2}) = 99;
+
+    // Tensörün datasını paylaşan bir lens oluştur
+    auto lens1 = tensrLens::lens<int>(
+        t9.data().lock(), // shared_ptr
+        t9.shape(),
+        t9.stride(),
+        t9.offset()
+    );
+
+    // Lens ile veri okuma/yazma
+    std::cout << "Lens ile erişim: lens1.at({0,0}) = " << lens1.at({0, 0}) << std::endl;
+    lens1.at({1, 2}) = 123;
+    std::cout << "Lens ile yazdiktan sonra t9.at({1,2}) = " << t9.at({1, 2}) << std::endl;
+
+    // Lens info fonksiyonunu test et
+    lens1.info();
+
+    // Cache test
+    lens1.cache_data_ptr();
+    std::cout << "Cache sonrasi lens1.at({0,1}) = " << lens1.at({0, 1}) << std::endl;
+    lens1.clear_cache();
+
     
     return 0;
 }

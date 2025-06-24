@@ -21,8 +21,8 @@ public:
     virtual size_t rank() const = 0; // return tensor or lens rank(Shape size)
     virtual size_t offset() const = 0; // return tensor or lens offset(distance from 0 index data)
 
-    T& at(const std::vector<size_t>& indices) = 0;
-    const T& at(const std::vector<size_t>& indices) const = 0;
+    virtual T& at(const std::vector<size_t>& indices) = 0;
+    virtual const T& at(const std::vector<size_t>& indices) const = 0;
 
     virtual ~TensrBase() = default; // virtual destructor for base class
 };
@@ -47,6 +47,7 @@ public:
         stride_ = compute_strides(shape);
         total_size_ = compute_total_size(shape);
         rank_ = compute_rank(shape);
+        offset_ = 0;
 
         data_ptr_ = std::make_shared<std::vector<T>>(total_size_);
         std::fill(data_ptr_->begin(), data_ptr_->end(), 0);
@@ -56,6 +57,7 @@ public:
 	    stride_ = compute_strides(shape);
         total_size_ = compute_total_size(shape);
         rank_ = compute_rank(shape);
+        offset_ = 0;
 
         data_ptr_ = std::make_shared<std::vector<T>>(std::move(data));
 
