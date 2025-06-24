@@ -18,13 +18,18 @@ inline size_t compute_total_size(const std::vector<size_t>& shape) {
 }
 
 inline std::vector<size_t> compute_strides(const std::vector<size_t>& shape) {
-    std::vector<size_t> strides(shape.size());
-    
-    size_t stride = 1;
-    for (int i = static_cast<int>(shape.size()) - 1; i >= 0; --i) {
-        strides[i] = stride;
-        stride *= shape[i];
+    if (shape.empty()) {
+        return {};
     }
+    
+    std::vector<size_t> strides(shape.size());
+    strides.back() = 1; 
+    
+
+    for (int i = static_cast<int>(shape.size()) - 2; i >= 0; --i) {
+        strides[i] = strides[i + 1] * shape[i + 1];
+    }
+    
     return strides;
 }
 

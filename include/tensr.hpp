@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "TensrUtils.hpp"
+#include "IndexUtils.hpp"
 
 namespace tensr {
 
@@ -38,7 +39,7 @@ private:
     
 public:
 
-    explicit Tensr(const std::vector<size_t>& shape) : shape_(std::move(shape)) {
+    explicit Tensr(const std::vector<size_t>& shape) : shape_(std::move(shape)) { // Tensr Constructer
         stride_ = compute_strides(shape);
         total_size_ = compute_total_size(shape);
         rank_ = compute_rank(shape);
@@ -47,7 +48,7 @@ public:
         std::fill(data_ptr_->begin(), data_ptr_->end(), 0);
     }
 
-    Tensr(const std::vector<size_t>& shape, const std::vector<T>& data) : shape_(std::move(shape)) {
+    Tensr(const std::vector<size_t>& shape, const std::vector<T>& data) : shape_(std::move(shape)) { // Tensr Constructer with data
 	    stride_ = compute_strides(shape);
         total_size_ = compute_total_size(shape);
         rank_ = compute_rank(shape);
@@ -70,11 +71,24 @@ public:
     size_t offset() const override { return offset_; } // return size_t offset 
 
     //------------------------------------------------------At functions
-    T& at(const std::vector<size_t> idx);
-    const T& at(const std::vector<size_t> idx) const;
+    T& at(const std::vector<size_t>& indices) {
+        size_t flat_index = indexUtils::flat_index(indices, shape_, stride_);
+        return (*data_ptr_)[flat_index];
+    }
+    const T& at(const std::vector<size_t>& indices) const {
+        size_t flat_index = indexUtils::flat_index(indices, shape_, stride_);
+        return (*data_ptr_)[flat_index];
+    }
     //------------------------------------------------------Setter functions
     void set_data();
-    void set_shape(const std::vector<size_t>& tshape);
+
+    void set_shape(const std::vector<size_t>& tshape) {
+        shape_ = std::move(tshape);
+        stride_ = compute_strides(tshape);
+        total_size_ = compute_total_size(tshape);
+        rank_ = compute_rank(tshape);
+    }
+
     void set_stride(const std::vector<size_t>& tstride) { stride_ = tstride; }
     void set_total_size(const size_t& tsize) { total_size_ = tsize; }
     void set_rank(const size_t& trank) { rank_ = trank; }
