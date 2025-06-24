@@ -93,6 +93,12 @@ public:
     void set_total_size(const size_t& tsize) { total_size_ = tsize; }
     void set_rank(const size_t& trank) { rank_ = trank; }
     void set_offset(const size_t& toffset) { offset_ = toffset; }
+
+    //-----------------------------------------------------Bool functions
+    bool is_contiguous() const {
+        auto expected = compute_strides(shape_);
+        return stride_ == expected;
+    }
 };
 
 }
