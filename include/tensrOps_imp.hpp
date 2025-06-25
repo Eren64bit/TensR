@@ -7,7 +7,7 @@
 
 
 namespace tensrOps {
-
+    //-----------------------------Transpose
     template<typename T>
     tensrLens::lens<T> transpose(const tensr::Tensr<T>& tensor, const std::vector<size_t>& perm) {
         if (perm.size() != tensor.rank()) {
@@ -69,5 +69,11 @@ namespace tensrOps {
         std::iota(perm.begin(), perm.end(), 0);
         std::reverse(perm.begin(), perm.end());
         return transpose(lens, perm);
+    }
+
+    //----------------------------------Slice
+    template<typename T>
+    tensrLens::lens<T> slice(const tensr::Tensr<T>&, std::vector<SliceRange>&) {
+        
     }
 }
