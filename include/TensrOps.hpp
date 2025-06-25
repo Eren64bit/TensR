@@ -2,9 +2,10 @@
 
 #include "tensrLens.hpp"
 #include "tensr.hpp"
+#include <bits/stdc++.h>
 
 
-namespace TensrOps {
+namespace tensrOps {
 
     template<typename T>
     tensrLens::lens<T> transpose(const tensr::Tensr<T>& tensor, const std::vector<size_t>& perm) {

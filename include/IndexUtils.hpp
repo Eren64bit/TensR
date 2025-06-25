@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-#include "TensrUtils.hpp"
+#include "tensrUtils.hpp"
 
 namespace indexUtils {
 

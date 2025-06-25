@@ -1,11 +1,15 @@
 #pragma once
 
-#include "tensr.hpp"
+
+#include "tensrBase.hpp"
+#include "tensrUtils.hpp"
+#include "indexUtils.hpp"
+#include "tensrOps.hpp"
 
 namespace tensrLens{
 
 template<typename T>
-class lens : public tensr::TensrBase<T> {
+class lens : public TensrBase<T> {
 private:
     std::weak_ptr<std::vector<T>> data_ptr_; // pointer to real data
     std::shared_ptr<std::vector<T>> cached_ptr_; // cached pointer for big tensors
@@ -21,7 +25,7 @@ private:
 
 public:
 
-    lens(const std::shared_ptr<std::vector<T>> data, const std::vector<size_t>& shape, const std::vector<size_t>& stride, const size_t& offset) 
+    lens(const std::shared_ptr<std::vector<T>>& data, const std::vector<size_t>& shape, const std::vector<size_t>& stride, const size_t& offset) 
         : data_ptr_(data), shape_(shape), stride_(stride), offset_(offset) { // Consstructor 
             total_size_ = compute_total_size(shape_);
             rank_ = compute_rank(shape_);
@@ -100,6 +104,10 @@ public:
         std::cout << "\n  Contiguous: " << (is_contiguous() ? "Yes" : "No") << std::endl;
     }
 
+    //-------------------------------------Free functions implementations
+    tensrLens::lens<T> transpose(const std::vector<size_t> perm) {
+        return tensrOps::transpose(*this, perm);
+    }
 };
 
 }
