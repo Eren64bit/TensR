@@ -30,6 +30,15 @@ namespace TensrOps {
     }
 
     template<typename T>
+    tensrLens::lens<T> transpose(const tensr::Tensr<T>& tensor) {
+        std::vector<size_t> perm(tensor.rank());
+        std::iota(perm.begin(), perm.end(), 0);
+        std::reverse(perm.begin(), perm.end());
+        return transpose(tensor, perm)
+    }
+
+
+    template<typename T>
     tensrLens::lens<T> transpose(const tensrLens::lens<T>& lens, const std::vector<size_t>& perm) {
         if (perm.size() != lens.rank()) {
             throw std::invalid_argument("lens::transpose: axes size must match tensor rank");
@@ -50,6 +59,14 @@ namespace TensrOps {
         }
 
         return tensrLens::lens<T>(lens.data(), new_shape, new_stride, lens.offset());
+    }
+
+    template<typename T>
+        tensrLens::lens<T> transpose(const tensrLens::lens<T>& lens) {
+        std::vector<size_t> perm(lens.rank());
+        std::iota(perm.begin(), perm.end(), 0);
+        std::reverse(perm.begin(), perm.end());
+        return transpose(lens, perm);
     }
 }
 
