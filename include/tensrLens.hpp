@@ -4,6 +4,9 @@
 #include "tensrBase.hpp"
 #include "tensrUtils.hpp"
 #include "indexUtils.hpp"
+#include "tensrOps_decl.hpp"
+
+
 
 namespace tensrLens{
 
@@ -111,7 +114,3 @@ public:
 
 }
 
-namespace tensrOps {
-    template<typename T>
-    tensrLens::lens<T> transpose(const tensrLens::lens<T>&, const std::vector<size_t>&);
-}

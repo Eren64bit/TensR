@@ -4,7 +4,9 @@
 #include "tensrBase.hpp"
 #include "tensrUtils.hpp"
 #include "indexUtils.hpp"
-#include "tensrOps.hpp"
+#include "tensrLens.hpp"
+#include "tensrOps_decl.hpp"
+
 
 namespace tensr {
 
@@ -87,9 +89,11 @@ public:
         return stride_ == expected;
     }
     
-    tensrLens::lens<T> transpose(const std::vector<size_t>& perm) {
+    //-------------------------------------Free functions implementations
+    tensrLens::lens<T> transpose(const std::vector<size_t> perm) {
         return tensrOps::transpose(*this, perm);
     }
 };
 
 }
+

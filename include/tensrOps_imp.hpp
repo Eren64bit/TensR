@@ -5,6 +5,7 @@
 #include <bits/stdc++.h>
 
 
+
 namespace tensrOps {
 
     template<typename T>
@@ -70,4 +71,3 @@ namespace tensrOps {
         return transpose(lens, perm);
     }
 }
-
