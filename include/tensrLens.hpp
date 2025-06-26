@@ -34,8 +34,8 @@ public:
     }
     std::weak_ptr<std::vector<T>> data() const override { return data_ptr_; } // return weak pointer make sure use lock() before accses data
 
-    const std::vector<size_t> shape() const override { return shape_; }
-    const std::vector<size_t> stride() const override { return stride_; }
+    const std::vector<size_t>& shape() const override { return shape_; }
+    const std::vector<size_t>& stride() const override { return stride_; }
 
     size_t size() const override { return total_size_; }
     
@@ -68,7 +68,56 @@ public:
             return (*ps)[final_index];
         }
     }
-    //-------------------------------
+    //-------------------------------Operator()
+    template<typename... Indices>
+    T operator()(Indices... indices) const { // (1,2,3) overload
+        static_assert((std::is_convertible_v<Indices, size_t> && ...), "All indices must be size_t");
+
+        std::array<size_t, sizeof...(Indices)> idxs = {static_cast<size_t>(indices)...};
+
+        if (idxs.size() != shape_.size()) {
+            throw std::invalid_argument("Index dimension mismatch in lens::operator()");
+        }
+        size_t flat = offset_;
+        for (size_t i = 0; i < idxs.size(); ++i) {
+            if (idxs[i] >= shape_[i]) {
+                throw std::out_of_range("Index out of bounds at dimension " + std::to_string(i));
+            }
+            flat += idxs[i] * stride_[i];
+        }
+        if (cached_ptr_) {
+            return (*cached_ptr_)[flat];
+        } else {
+            auto ps = data_ptr_.lock();
+            if (!ps) throw std::runtime_error("Data expired");
+            return (*ps)[flat];
+        }
+    }
+
+    T operator()(std::initializer_list<size_t> indices) const { // ({1,2,3}) overload
+        if (indices.size() != shape_.size()) {
+            throw std::invalid_argument("Index dimension mismatch in lens::operator()");
+        }
+
+        size_t flat = offset_;
+        size_t i = 0;
+        for (auto idx : indices) {
+            if (idx >= shape_[i]) {
+                throw std::out_of_range("Index out of bounds at dimension " + std::to_string(i));
+            }
+            flat += idx * stride_[i];
+            ++i;
+        }
+
+        if (cached_ptr_) {
+            return (*cached_ptr_)[flat];
+        } else {
+            auto ps = data_ptr_.lock();
+            if (!ps) throw std::runtime_error("Data expired");
+            return (*ps)[flat];
+        }
+    }
+    //-------------------------------Cache 
     void cache_data_ptr() {
         auto sp = data_ptr_.lock();
         if (!sp) throw std::runtime_error("Data expired");
@@ -112,7 +161,7 @@ public:
     }
 
     tensrLens::lens<T> slice(const std::vector<tensrOps::SliceRange>& ranges) {
-        return tensrOps::slice(*this, ranges)
+        return tensrOps::slice(*this, ranges);
     }
 };
 

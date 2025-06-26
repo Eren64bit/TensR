@@ -51,8 +51,8 @@ public:
 
     std::weak_ptr<std::vector<T>> data() const override { return data_ptr_; } // return data_ptr make sure before use it, Dereference it
 
-    const std::vector<size_t> shape() const override { return shape_; } // return size_t vector shape
-    const std::vector<size_t> stride() const override { return stride_; } // return size_t vector stride
+    const std::vector<size_t>& shape() const override { return shape_; } // return size_t vector shape
+    const std::vector<size_t>& stride() const override { return stride_; } // return size_t vector stride
 
     size_t size() const override { return total_size_; } // return size_t total size
 

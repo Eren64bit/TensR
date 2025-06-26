@@ -9,8 +9,8 @@ class TensrBase {
 public:
     virtual std::weak_ptr<std::vector<T>> data() const = 0; // return weak pointer to tensor data
 
-    virtual const std::vector<size_t> shape() const = 0; // return tensor or lens shape
-    virtual const std::vector<size_t> stride() const = 0; // return tensor or lens stride
+    virtual const std::vector<size_t>& shape() const = 0; // return tensor or lens shape
+    virtual const std::vector<size_t>& stride() const = 0; // return tensor or lens stride
 
     virtual size_t size() const = 0; // return tensor or lens total size
 
