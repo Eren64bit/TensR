@@ -5,8 +5,6 @@
 #include <numeric>
 #include <vector>
 
-
-
 inline size_t compute_rank(const std::vector<size_t>& shape) {
     return shape.size();
 }
@@ -33,4 +31,5 @@ inline std::vector<size_t> compute_strides(const std::vector<size_t>& shape) {
     
     return strides;
 }
+
 

@@ -30,7 +30,7 @@ namespace tensrOps {
         SliceRange(int s, int e, int st = 1)
             : start(s), stop(e), step(st) {}
     };
-
+    
     template<typename T>
     tensrLens::lens<T> slice(const tensr::Tensr<T>& tensor, const std::vector<SliceRange>& ranges);
 

@@ -42,6 +42,7 @@ public:
     size_t rank() const override { return rank_; }
     size_t offset() const override { return offset_; }
 
+    //--------------------------------At()
     T& at(const std::vector<size_t>& indices) override {
         size_t flat_index = indexUtils::flat_index(indices, shape_, stride_);
 
@@ -66,6 +67,22 @@ public:
             auto ps = data_ptr_.lock();
             if (!ps) throw std::runtime_error("Data expired");
             return (*ps)[final_index];
+        }
+    }
+    //-------------------------------Linear At()
+    T& at_linear(size_t linear_idx) {
+        if (!is_contiguous()) {
+            throw std::runtime_error("at_linear called on non-contiguous tensor");
+        }
+
+        size_t final_idx = offset_ + linear_idx;
+
+        if (cached_ptr_) {
+            return (*cached_ptr_)[final_idx];
+        } else {
+            auto ps = data_ptr_.lock();
+            if (!ps) throw std::runtime_error("Data expired");
+            return (*ps)[final_idx];
         }
     }
     //-------------------------------Operator()
@@ -117,6 +134,43 @@ public:
             return (*ps)[flat];
         }
     }
+    //-------------------------------Copy()
+    tensr::Tensr<T> copy() const {
+        std::vector<T> result(total_size_);
+
+        if (is_contiguous()) {
+            for (size_t i = 0; i < total_size_; ++i) {
+                result[i] = at_linear(i);
+            }
+        } else {
+            for (size_t i = 0; i < total_size_; ++i) {
+                auto idx = indexUtils::unflatten_index(i, shape_);
+                result[i] = at(idx);
+            }
+        }
+
+        return tensr::Tensr<T>(shape_, std::move(result));
+    }
+    //-------------------------------Flatten()
+    tensrLens::lens<T> flatten() const {
+        std::vector<size_t> flat_shape = { total_size_ };
+        std::vector<size_t> flat_stride = { 1 };
+        return lens<T>(data_ptr_.lock(), flat_shape, flat_stride, offset_);
+    }
+    //-------------------------------reshape()
+    tensrLens::lens<T> reshape(const std::vector<size_t>& new_shape) const {
+        size_t new_total = compute_total_size(new_shape);
+        if (new_total != total_size_) {
+            throw std::invalid_argument("reshape: new shape does not match total size");
+        }
+
+        if (!is_contiguous()) {
+            return copy().reshape(new_shape);
+        }
+
+        std::vector<size_t> new_stride = compute_strides(new_shape);
+        return tensrLens::lens<T>(data_ptr_.lock(), new_shape, new_stride, offset_);
+    }
     //-------------------------------Cache 
     void cache_data_ptr() {
         auto sp = data_ptr_.lock();
@@ -128,7 +182,6 @@ public:
         cached_ptr_.reset();
     }
 
-
     //-------------------------------Bool functions
     bool is_valid() const {
         return !data_ptr_.expired();
@@ -137,8 +190,7 @@ public:
         return data_ptr_.use_count();
     }
     bool is_contiguous() const {
-        auto expected = compute_strides(shape_);
-        return stride_ == expected;
+        return stride_ == compute_strides(shape_) && offset_ == 0;
     }
 
 

@@ -49,4 +49,6 @@ inline int normalize_index(int idx, size_t dim_size) {
     return idx;
 }
 
+
+
 }
