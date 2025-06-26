@@ -22,18 +22,18 @@ namespace tensrOps {
 
     //-------------------------------Slice
     struct SliceRange {
-        size_t start;
-        size_t stop;
-        size_t step;
+        int start = 0;
+        int stop = 0;
+        int step = 1;
 
         SliceRange() = default;
-        SliceRange(size_t s, size_t e, size_t st = 1)
+        SliceRange(int s, int e, int st = 1)
             : start(s), stop(e), step(st) {}
     };
 
     template<typename T>
-    tensrLens::lens<T> slice(const tensr::Tensr<T>&, std::vector<SliceRange>&);
+    tensrLens::lens<T> slice(const tensr::Tensr<T>& tensor, const std::vector<SliceRange>& ranges);
 
     template<typename T>
-    tensrLens::lens<T> slice(const tensrLens::lens<T>& lensView, const std::vector<SliceRange>& ranges);
+    tensrLens::lens<T> slice(const tensrLens::lens<T>& lensW, const std::vector<SliceRange>& ranges);
 }

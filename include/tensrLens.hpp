@@ -110,6 +110,10 @@ public:
     tensrLens::lens<T> transpose(const std::vector<size_t> perm) {
         return tensrOps::transpose(*this, perm);
     }
+
+    tensrLens::lens<T> slice(const std::vector<tensrOps::SliceRange>& ranges) {
+        return tensrOps::slice(*this, ranges)
+    }
 };
 
 }

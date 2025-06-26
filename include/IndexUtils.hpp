@@ -41,6 +41,12 @@ inline std::vector<size_t> unflatten_index(const size_t index, const std::vector
     return res_vector;
 }
 
-
+inline int normalize_index(int idx, size_t dim_size) {
+    if (idx < 0) idx = static_cast<int>(dim_size) + idx;
+    if (idx < 0 || idx >= static_cast<int>(dim_size)) {
+        throw std::out_of_range("Normalized index out of bounds");
+    }
+    return idx;
+}
 
 }
