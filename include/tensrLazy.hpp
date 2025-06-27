@@ -85,6 +85,27 @@ public:
 };
 
 template<typename T>
+class unaryExpr : public tensrExpr<T> {
+private:
+    std::shared_ptr<tensrExpr<T>> operand_;
+    std::function<T(T)> op_;
+    std::vector<size_t> shape_;
+
+public:
+    unaryExpr(std::shared_ptr<tensrExpr<T>> operand, std::function<T(T)> f)
+        : operand_(std::move(operand)), op_(std::move(f)), shape_(operand_->shape()) {}
+    
+    T eval_at(const std::vector<size_t>& idx) const override {
+        return op_(operand_->eval_at(idx));
+    }
+    
+    std::vector<size_t> shape() const override {
+        return shape_;
+    }
+};
+
+
+template<typename T>
 tensr::Tensr<T> materialize(const tensrExpr<T>& expr) {
     auto shape = expr.shape();
     tensr::Tensr<T> out(shape);
@@ -123,5 +144,69 @@ auto operator+(const L& left, const R& right)
     auto rhs_leaf = tensrLazy::leaf(right);
     return std::make_shared<tensrLazy::binaryExpr<T>>(lhs_leaf, rhs_leaf, [](T a, T b) { return a + b; });
 }
+
+template<typename L, typename R>
+auto operator-(const L& left, const R& right)
+    -> std::enable_if_t<
+        is_tensor_or_lens<std::decay_t<L>>::value &&
+        is_tensor_or_lens<std::decay_t<R>>::value,
+        std::shared_ptr<tensrLazy::tensrExpr<tensrLazy::tensor_value_type_t<L>>>
+    >
+{
+    using T = tensor_value_type_t<L>;
+    auto lhs_leaf = leaf(left);
+    auto rhs_leaf = leaf(right);
+    return std::make_shared<binaryExpr<T>>(lhs_leaf, rhs_leaf, [](T a, T b) { return a - b; });
+}
+
+template<typename L, typename R>
+auto operator*(const L& left, const R& right)
+    -> std::enable_if_t<
+        is_tensor_or_lens<std::decay_t<L>>::value &&
+        is_tensor_or_lens<std::decay_t<R>>::value,
+        std::shared_ptr<tensrLazy::tensrExpr<tensrLazy::tensor_value_type_t<L>>>
+    >
+{
+    using T = tensor_value_type_t<L>;
+    auto lhs_leaf = leaf(left);
+    auto rhs_leaf = leaf(right);
+    return std::make_shared<binaryExpr<T>>(lhs_leaf, rhs_leaf, [](T a, T b) { return a * b; });
+}
+
+template<typename T>
+auto operator-(const T& operand)
+    -> std::enable_if_t<is_tensor_or_lens<std::decay_t<T>>::value,
+        std::shared_ptr<tensrLazy::tensrExpr<tensrLazy::tensor_value_type_t<T>>>
+    >
+{
+    using ValueT = tensor_value_type_t<T>;
+    auto operand_leaf = leaf(operand);
+    return std::make_shared<unaryExpr<ValueT>>(operand_leaf, [](ValueT a) { return -a; });
+}
+
+template<typename T>
+auto abs(const T& operand)
+    ->  std::enable_if_t<is_tensor_or_lens<std::decay_t<T>>::value,
+        std::shared_ptr<tensrLazy::tensrExpr<tensrLazy::tensor_value_type_t<T>>>
+    >
+{
+    using ValueT = tensor_value_type_t<T>;
+    auto operand_leaf = leaf(operand);
+    return std::make_shared<unaryExpr<ValueT>>(operand_leaf, [](ValueT a) { return std::abs(a); });
+}
+
+template<typename T>
+auto sqrt(const T& operand)
+    -> std::enable_if_t<is_tensor_or_lens<std::decay_t<T>>::value,
+       std::shared_ptr<tensrLazy::tensrExpr<tensrLazy::tensor_value_type_t<T>>>
+       >
+{
+    using ValueT = tensor_value_type_t<T>;
+    auto operand_leaf = leaf(operand);
+    return std::make_shared<unaryExpr<ValueT>>(operand_leaf, 
+                                              [](ValueT a) { return std::sqrt(a); });
+}
+
+
 
 //return tensrLazy::binaryExpr<T>(std::make_shared<tensrLazy::tensrExpr<T>>(left), std::make_shared<tensrLazy::tensrExpr<T>>(right), [](T a, T b) { return a + b; });
