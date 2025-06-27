@@ -156,7 +156,7 @@ auto operator-(const L& left, const R& right)
     using T = tensor_value_type_t<L>;
     auto lhs_leaf = leaf(left);
     auto rhs_leaf = leaf(right);
-    return std::make_shared<binaryExpr<T>>(lhs_leaf, rhs_leaf, [](T a, T b) { return a - b; });
+    return std::make_shared<tensrLazy::binaryExpr<T>>(lhs_leaf, rhs_leaf, [](T a, T b) { return a - b; });
 }
 
 template<typename L, typename R>
@@ -170,7 +170,7 @@ auto operator*(const L& left, const R& right)
     using T = tensor_value_type_t<L>;
     auto lhs_leaf = leaf(left);
     auto rhs_leaf = leaf(right);
-    return std::make_shared<binaryExpr<T>>(lhs_leaf, rhs_leaf, [](T a, T b) { return a * b; });
+    return std::make_shared<tensrLazy::binaryExpr<T>>(lhs_leaf, rhs_leaf, [](T a, T b) { return a * b; });
 }
 
 template<typename T>
@@ -181,7 +181,7 @@ auto operator-(const T& operand)
 {
     using ValueT = tensor_value_type_t<T>;
     auto operand_leaf = leaf(operand);
-    return std::make_shared<unaryExpr<ValueT>>(operand_leaf, [](ValueT a) { return -a; });
+    return std::make_shared<tensrLazy::unaryExpr<ValueT>>(operand_leaf, [](ValueT a) { return -a; });
 }
 
 template<typename T>
@@ -192,7 +192,7 @@ auto abs(const T& operand)
 {
     using ValueT = tensor_value_type_t<T>;
     auto operand_leaf = leaf(operand);
-    return std::make_shared<unaryExpr<ValueT>>(operand_leaf, [](ValueT a) { return std::abs(a); });
+    return std::make_shared<tensrLazy::unaryExpr<ValueT>>(operand_leaf, [](ValueT a) { return std::abs(a); });
 }
 
 template<typename T>
@@ -203,7 +203,7 @@ auto sqrt(const T& operand)
 {
     using ValueT = tensor_value_type_t<T>;
     auto operand_leaf = leaf(operand);
-    return std::make_shared<unaryExpr<ValueT>>(operand_leaf, 
+    return std::make_shared<tensrLazy::unaryExpr<ValueT>>(operand_leaf, 
                                               [](ValueT a) { return std::sqrt(a); });
 }
 
