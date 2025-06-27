@@ -1,17 +1,18 @@
-# Tensr
+# Deux ex Machina - Tensr
 
-**Tensr** is a modern, extensible C++ tensor library for numerical computing, machine learning, and scientific computing. It provides efficient N-dimensional arrays, zero-copy tensor views, broadcasting, and a clean, type-safe API using modern C++ features.
+**Tensr** is a modern, extensible C++ tensor library for numerical and scientific computing. It provides efficient N-dimensional arrays, zero-copy tensor views, broadcasting, slicing, and lazy evaluation with a clean, type-safe API using modern C++17 features.
 
 ---
 
 ## Features
 
 - **N-dimensional tensor support** (`tensr::Tensr<T>`)
-- **Zero-copy tensor views** (`tensrLens::lens<T>`) for slicing, reshaping, and broadcasting
+- **Zero-copy tensor views** (`tensrLens::lens<T>`) for slicing, reshaping, flattening, and broadcasting
 - **NumPy-style broadcasting** for elementwise operations
+- **Advanced slicing and transposing**
+- **Lazy evaluation** (`tensrLazy`) for efficient expression trees and deferred computation
 - **Shape, stride, and offset management**
 - **Bounds-checked element access**
-- **Reshape, flatten, and transpose operations**
 - **Cache mechanism** for efficient repeated access
 - **Exception-safe API** with robust error handling
 - **Modern C++**: smart pointers, templates, type traits
@@ -46,6 +47,7 @@ g++ -std=c++17 -Iinclude main.cpp -o tensr_test
 #include "include/tensrOps_decl.hpp"
 #include "include/tensrOps_imp.hpp"
 #include "include/tensrBroadcast.hpp"
+#include "include/tensrLazy.hpp"
 
 int main() {
     // Create a 2x3 tensor and fill it
@@ -83,6 +85,16 @@ int main() {
     auto blens = broadcast::broadcast_to(tb, target_shape);
     blens.info();
 
+    // Lazy evaluation example
+    tensr::Tensr<float> t2(shape);
+    for (size_t i = 0; i < t2.size(); ++i) {
+        auto idx = indexUtils::unflatten_index(i, shape);
+        t2.at(idx) = static_cast<float>(10 * (i + 1));
+    }
+    auto expr = t + t2; // lazy addition
+    auto result = tensrLazy::materialize(*expr);
+    result.info();
+
     return 0;
 }
 ```
@@ -95,6 +107,7 @@ int main() {
 - `tensrLens::lens<T>`: Zero-copy tensor view for slicing, reshaping, broadcasting
 - `tensrOps::transpose`, `tensrOps::slice`: Tensor operations
 - `broadcast::broadcast_to`: Broadcasting utility
+- `tensrLazy::materialize`, `operator+`, `operator-`, `operator*`, `abs`, `sqrt`: Lazy operations and materialization
 - `T& at(const std::vector<size_t>& indices)`: Bounds-checked element access
 - `size_t size() const`: Total number of elements
 - `size_t rank() const`: Number of dimensions
@@ -116,6 +129,7 @@ include/
     tensrOps_decl.hpp
     tensrOps_imp.hpp
     tensrBroadcast.hpp
+    tensrLazy.hpp
 main.cpp
 ```
 
@@ -133,4 +147,4 @@ MIT License
 
 ---
 
-**Note:** This project is under active development and the API may change.
+**Note:** This project is under active development and the

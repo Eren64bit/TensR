@@ -126,9 +126,6 @@ std::shared_ptr<tensrLazy::tensrExpr<T>> leaf(const tensrLens::lens<T>& l) {
     return std::make_shared<tensrLazy::tensrLeaf<T>>(l);
 }
 
-
-
-
 }
 
 template<typename L, typename R>
