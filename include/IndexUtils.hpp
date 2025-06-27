@@ -49,6 +49,26 @@ inline int normalize_index(int idx, size_t dim_size) {
     return idx;
 }
 
+inline size_t normalize_index(size_t idx, size_t dim_size) {
+    if (idx >= dim_size) {
+        throw std::out_of_range("Normalized index out of bounds");
+    }
+    return idx;
+}
+
+inline int normalize_slice_index(int idx, size_t dim_size, bool is_stop = false) {
+    if (idx < 0) idx = static_cast<int>(dim_size) + idx;
+    if (is_stop) {
+        if (idx < 0 || idx > static_cast<int>(dim_size)) {
+            throw std::out_of_range("Slice stop index out of bounds");
+        }
+    } else {
+        if (idx < 0 || idx >= static_cast<int>(dim_size)) {
+            throw std::out_of_range("Slice start index out of bounds");
+        }
+    }
+    return idx;
+}
 
 
 }

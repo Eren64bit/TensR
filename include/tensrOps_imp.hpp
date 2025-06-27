@@ -92,14 +92,18 @@ namespace tensrOps {
             size_t dim = orig_shape[i];
 
 
-            int start = indexUtils::normalize_index(r.start, dim);
-            int stop = indexUtils::normalize_index(r.stop, dim);
+            int start = indexUtils::normalize_slice_index(r.start, dim, true);
+            int stop = indexUtils::normalize_slice_index(r.stop, dim, true);
 
             if (start < 0 || stop < 0 || start >= static_cast<int>(dim) || stop > static_cast<int>(dim) || r.step == 0) {
                 throw std::out_of_range("Invalid (normalized) slice range");
             }
 
-            size_t len = (stop - start + r.step - 1) / r.step;
+            if ((r.step > 0 && start >= stop) || (r.step < 0 && start <= stop)) {
+                len = 0;
+            } else {
+                len = (std::abs(stop - start) + std::abs(r.step) - 1) / std::abs(r.step);
+            }
             new_shape.push_back(len);
             new_stride.push_back(orig_stride[i] * r.step);
             new_offset += start * orig_stride[i];
@@ -126,14 +130,18 @@ namespace tensrOps {
             size_t dim = orig_shape[i];
 
 
-            int start = indexUtils::normalize_index(r.start, dim);
-            int stop = indexUtils::normalize_index(r.stop, dim);
+            int start = indexUtils::normalize_slice_index(r.start, dim, true);
+            int stop = indexUtils::normalize_slice_index(r.stop, dim, true);
 
             if (start < 0 || stop < 0 || start >= static_cast<int>(dim) || stop > static_cast<int>(dim) || r.step == 0) {
                 throw std::out_of_range("Invalid (normalized) slice range");
             }
 
-            size_t len = (stop - start + r.step - 1) / r.step;
+            if ((r.step > 0 && start >= stop) || (r.step < 0 && start <= stop)) {
+                len = 0;
+            } else {
+                len = (std::abs(stop - start) + std::abs(r.step) - 1) / std::abs(r.step);
+            }
             new_shape.push_back(len);
             new_stride.push_back(orig_stride[i] * r.step);
             new_offset += start * orig_stride[i];
