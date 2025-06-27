@@ -76,11 +76,11 @@ public:
     }
 
     T eval_at(const std::vector<size_t>& idx) const override {
-        return op(lhs->eval_at(idx), rhs->eval_at(idx));
+        return op(lhs_->eval_at(idx), rhs_->eval_at(idx));
     }
 
     std::vector<size_t> shape() const override {
-        return lhs->shape();
+        return lhs_->shape();
     }
 };
 
@@ -105,20 +105,23 @@ std::shared_ptr<tensrLazy::tensrExpr<T>> leaf(const tensrLens::lens<T>& l) {
     return std::make_shared<tensrLazy::tensrLeaf<T>>(l);
 }
 
+
+
+
+}
+
 template<typename L, typename R>
 auto operator+(const L& left, const R& right)
     -> std::enable_if_t<
         is_tensor_or_lens<std::decay_t<L>>::value &&
         is_tensor_or_lens<std::decay_t<R>>::value,
-        std::shared_ptr<tensrExpr<typename std::decay_t<L>::value_type>>
+        std::shared_ptr<tensrLazy::tensrExpr<tensrLazy::tensor_value_type_t<L>>>
     >
 {
-    using T = typename std::decay_t<L>::value_type;
-    auto lhs_leaf = leaf(left);
-    auto rhs_leaf = leaf(right);
-    return std::make_shared<binaryExpr<T>>(lhs_leaf, rhs_leaf, [](T a, T b) { return a + b; });
-}
-
+    using T = tensrLazy::tensor_value_type_t<L>;
+    auto lhs_leaf = tensrLazy::leaf(left);
+    auto rhs_leaf = tensrLazy::leaf(right);
+    return std::make_shared<tensrLazy::binaryExpr<T>>(lhs_leaf, rhs_leaf, [](T a, T b) { return a + b; });
 }
 
 //return tensrLazy::binaryExpr<T>(std::make_shared<tensrLazy::tensrExpr<T>>(left), std::make_shared<tensrLazy::tensrExpr<T>>(right), [](T a, T b) { return a + b; });

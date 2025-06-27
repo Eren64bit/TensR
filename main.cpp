@@ -1,10 +1,12 @@
 #include <iostream>
 #include <vector>
+#include <memory>
 #include "include/tensr.hpp"
 #include "include/tensrLens.hpp"
 #include "include/tensrOps_decl.hpp"
 #include "include/tensrOps_imp.hpp"
 #include "include/tensrBroadcast.hpp"
+#include "include/tensrLazy.hpp"
 
 int main() {
     try {
@@ -58,12 +60,11 @@ int main() {
         // 8. Broadcast
         std::vector<size_t> bshape = {2, 3, 4};
         tensr::Tensr<float> tb({1,3,1});
-        for (size_t i = 0; i < tb.size(); ++i) tb.at(indexUtils::unflatten_index(i, {1,3,1})) = float(i+1);
+        for (size_t i = 0; i < tb.size(); ++i)
+            tb.at(indexUtils::unflatten_index(i, {1,3,1})) = float(i+1);
         auto blens = broadcast::broadcast_to(tb, bshape);
         std::cout << "\nBroadcasted lens info:\n";
         blens.info();
-
-        // Broadcast erişim örneği
         std::cout << "Broadcasted lens (1,2,3): " << blens(1,2,3) << std::endl;
 
         // 9. Cache test
@@ -72,21 +73,33 @@ int main() {
         l.info();
         l.clear_cache();
 
-        // 10. Hatalı erişim testleri
+        // 10. tensrLazy: tembel toplama
+        tensr::Tensr<float> t3(shape);
+        for (size_t i = 0; i < t3.size(); ++i) {
+            auto idx = indexUtils::unflatten_index(i, shape);
+            t3.at(idx) = static_cast<float>(10 * (i + 1));
+        }
+        auto expr = t + t3; // lazy addition
+        auto result = tensrLazy::materialize(*expr);
+        std::cout << "\nLazy add materialized result info:\n";
+        result.info();
+        std::cout << "Lazy add result (1,2): " << result.at({1,2}) << std::endl;
+
+        // 11. Hatalı erişim testleri
         try {
             l(5,0); // Hatalı indeks
         } catch (const std::exception& e) {
-            std::cout << "\nBeklenen hata (out of bounds): " << e.what() << std::endl;
+            std::cout << "\nExpected error (out of bounds): " << e.what() << std::endl;
         }
 
         try {
             l.reshape({4,2}); // Hatalı reshape
         } catch (const std::exception& e) {
-            std::cout << "Beklenen hata (reshape): " << e.what() << std::endl;
+            std::cout << "Expected error (reshape): " << e.what() << std::endl;
         }
 
     } catch (const std::exception& e) {
-        std::cout << "Beklenmeyen hata: " << e.what() << std::endl;
+        std::cout << "Unexpected error: " << e.what() << std::endl;
     }
     return 0;
 }

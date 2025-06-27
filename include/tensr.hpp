@@ -96,7 +96,19 @@ public:
 
     //-------------------------------------view()
     tensrLens::lens<T> view() const {
-        return tensrLens::lens<T>(data_ptr_, shape_, stride, offset);
+        return tensrLens::lens<T>(data_ptr_, shape_, stride_, offset_);
+    }
+
+    //-------------------------------------info()
+    void info() const {
+        std::cout << "Tensor Info:\n";
+        std::cout << "  Shape: ";
+        for (auto s : shape_) std::cout << s << " ";
+        std::cout << "\n  Stride: ";
+        for (auto s : stride_) std::cout << s << " ";
+        std::cout << "\n  Offset: " << offset_;
+        std::cout << "\n  Size: " << total_size_;
+        std::cout << "\n  Contiguous: " << (is_contiguous() ? "Yes" : "No") << std::endl;
     }
 };
 
