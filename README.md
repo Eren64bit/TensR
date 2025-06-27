@@ -133,4 +133,4 @@ MIT License
 
 ---
 
-**Note:** This project is under active development and the
+**Note:** This project is under active development and the API may change.
