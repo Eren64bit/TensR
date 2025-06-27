@@ -98,7 +98,7 @@ namespace tensrOps {
             if (start < 0 || stop < 0 || start >= static_cast<int>(dim) || stop > static_cast<int>(dim) || r.step == 0) {
                 throw std::out_of_range("Invalid (normalized) slice range");
             }
-
+            size_t len;
             if ((r.step > 0 && start >= stop) || (r.step < 0 && start <= stop)) {
                 len = 0;
             } else {
@@ -136,7 +136,7 @@ namespace tensrOps {
             if (start < 0 || stop < 0 || start >= static_cast<int>(dim) || stop > static_cast<int>(dim) || r.step == 0) {
                 throw std::out_of_range("Invalid (normalized) slice range");
             }
-
+            size_t len;
             if ((r.step > 0 && start >= stop) || (r.step < 0 && start <= stop)) {
                 len = 0;
             } else {
