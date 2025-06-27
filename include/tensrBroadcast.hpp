@@ -77,7 +77,7 @@ namespace broadcast {
         std::vector<size_t> common_shape = compute_broadcast_shape(tensor.shape(), target_shape);
         std::vector<size_t> common_stride = compute_broadcast_stride(tensor.shape(), target_shape);
 
-        tensrLens::lens<T> lens(tensor.data(), common_shape, common_stride, tensor.offset());
+        tensrLens::lens<T> lens(tensor.data().lock(), common_shape, common_stride, tensor.offset());
         return lens;
     }
 
@@ -86,7 +86,7 @@ namespace broadcast {
         std::vector<size_t> common_shape = compute_broadcast_shape(lens.shape(), target_shape);
         std::vector<size_t> common_stride = compute_broadcast_stride(lens.shape(), target_shape);
 
-        tensrLens::lens<T> comp_lens(lens.data(), common_shape, common_stride, lens.offset());
+        tensrLens::lens<T> comp_lens(lens.data().lock(), common_shape, common_stride, lens.offset());
         return comp_lens;
     }
 

@@ -1,73 +1,92 @@
 #include <iostream>
+#include <vector>
 #include "include/tensr.hpp"
 #include "include/tensrLens.hpp"
+#include "include/tensrOps_decl.hpp"
+#include "include/tensrOps_imp.hpp"
+#include "include/tensrBroadcast.hpp"
 
 int main() {
-    // İlk tensor testi
-    std::vector<size_t> shape = {2, 3};
-    tensr::Tensr<int> t1(shape);
-    
-    std::cout << "t1 shape: ";
-    for (auto s : t1.shape()) std::cout << s << " ";
-    std::cout << "\nt1 size: " << t1.size() << std::endl;
-    
-    std::cout << "t1 stride: ";
-    for (auto s : t1.stride()) std::cout << s << " ";
-    std::cout << std::endl;
-    
-    // İkinci tensor testi
-    std::vector<size_t> shape2 = {2, 2};
-    std::vector<int> data = {1, 2, 3, 4};
-    tensr::Tensr<int> t2(shape2, data);
-    
-    std::cout << "t2 shape: ";
-    for (auto s : t2.shape()) std::cout << s << " ";
-    std::cout << "\nt2 size: " << t2.size() << std::endl;
-    
-    std::cout << "t2 stride: ";
-    for (auto s : t2.stride()) std::cout << s << " ";
-    std::cout << std::endl;
-    
-    // Eleman atama ve erişim testi
-    std::cout << "t1.at({0,0}) Before: " << t1.at({0, 0}) << std::endl;
-    t1.at({0, 0}) = 42;
-    std::cout << "t1.at({0,0}) after: " << t1.at({0, 0}) << std::endl;
-    
-    // t2 için test
-    std::cout << "t2.at({0,0}): " << t2.at({0, 0}) << std::endl;
-    std::cout << "t2.at({0,1}): " << t2.at({0, 1}) << std::endl;
-    std::cout << "t2.at({1,0}): " << t2.at({1, 0}) << std::endl;
-    std::cout << "t2.at({1,1}): " << t2.at({1, 1}) << std::endl;
+    try {
+        // 1. Tensr oluşturma ve doldurma
+        std::vector<size_t> shape = {2, 3};
+        tensr::Tensr<float> t(shape);
+        for (size_t i = 0; i < t.size(); ++i) {
+            auto idx = indexUtils::unflatten_index(i, shape);
+            t.at(idx) = static_cast<float>(i + 1);
+        }
+        std::cout << "Tensr t info:\n";
+        t.transpose({1,0}).info();
 
-    std::vector<size_t> shape123 = {2, 3};
-    tensr::Tensr<int> t9(shape123);
+        // 2. Lens oluşturma
+        auto locked_data = t.data().lock();
+        if (!locked_data) throw std::runtime_error("Tensor data expired");
+        tensrLens::lens<float> l(locked_data, t.shape(), t.stride(), t.offset());
+        std::cout << "\nLens l info:\n";
+        l.info();
 
-    // Veriye değer ata
-    t9.at({0, 0}) = 10;
-    t9.at({0, 1}) = 20;
-    t9.at({1, 2}) = 99;
+        // 3. Lens ile erişim
+        std::cout << "\nLens l(1,2): " << l(1,2) << std::endl;
+        std::cout << "Lens l.at({0,1}): " << l.at({0,1}) << std::endl;
 
-    // Tensörün datasını paylaşan bir lens oluştur
-    auto lens1 = tensrLens::lens<int>(
-        t9.data().lock(), // shared_ptr
-        t9.shape(),
-        t9.stride(),
-        t9.offset()
-    );
+        // 4. Transpose
+        auto lT = l.transpose({1,0});
+        std::cout << "\nTransposed lens info:\n";
+        lT.info();
+        std::cout << "lT(2,1): " << lT(2,1) << std::endl;
 
-    // Lens ile veri okuma/yazma
-    std::cout << "Lens ile erişim: lens1.at({0,0}) = " << lens1.at({0, 0}) << std::endl;
-    lens1.at({1, 2}) = 123;
-    std::cout << "Lens ile yazdiktan sonra t9.at({1,2}) = " << t9.at({1, 2}) << std::endl;
+        // 5. Slice
+        std::vector<tensrOps::SliceRange> ranges = { {0,2,1}, {1,3,1} };
+        auto lS = l.slice(ranges);
+        std::cout << "\nSliced lens info:\n";
+        lS.info();
+        std::cout << "lS(1,1): " << lS(1,1) << std::endl;
 
-    // Lens info fonksiyonunu test et
-    lens1.info();
+        // 6. Flatten ve reshape
+        auto lF = l.flatten();
+        std::cout << "\nFlattened lens info:\n";
+        lF.info();
+        auto lR = lF.reshape({2,3});
+        std::cout << "\nReshaped lens info:\n";
+        lR.info();
 
-    // Cache test
-    lens1.cache_data_ptr();
-    std::cout << "Cache sonrasi lens1.at({0,1}) = " << lens1.at({0, 1}) << std::endl;
-    lens1.clear_cache();
+        // 7. Copy
+        auto t2 = l.copy();
+        std::cout << "\nCopied tensr info:\n";
+        t2.transpose({1,0}).info();
 
-    
+        // 8. Broadcast
+        std::vector<size_t> bshape = {2, 3, 4};
+        tensr::Tensr<float> tb({1,3,1});
+        for (size_t i = 0; i < tb.size(); ++i) tb.at(indexUtils::unflatten_index(i, {1,3,1})) = float(i+1);
+        auto blens = broadcast::broadcast_to(tb, bshape);
+        std::cout << "\nBroadcasted lens info:\n";
+        blens.info();
+
+        // Broadcast erişim örneği
+        std::cout << "Broadcasted lens (1,2,3): " << blens(1,2,3) << std::endl;
+
+        // 9. Cache test
+        l.cache_data_ptr();
+        std::cout << "\nAfter caching, lens info:\n";
+        l.info();
+        l.clear_cache();
+
+        // 10. Hatalı erişim testleri
+        try {
+            l(5,0); // Hatalı indeks
+        } catch (const std::exception& e) {
+            std::cout << "\nBeklenen hata (out of bounds): " << e.what() << std::endl;
+        }
+
+        try {
+            l.reshape({4,2}); // Hatalı reshape
+        } catch (const std::exception& e) {
+            std::cout << "Beklenen hata (reshape): " << e.what() << std::endl;
+        }
+
+    } catch (const std::exception& e) {
+        std::cout << "Beklenmeyen hata: " << e.what() << std::endl;
+    }
     return 0;
 }

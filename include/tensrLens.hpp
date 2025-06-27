@@ -85,6 +85,21 @@ public:
             return (*ps)[final_idx];
         }
     }
+
+    const T& at_linear(size_t linear_idx) const {
+        if (!is_contiguous()) {
+            throw std::runtime_error("at_linear called on non-contiguous tensor");
+        }
+
+        size_t final_idx = offset_ + linear_idx;
+        if (cached_ptr_) {
+            return (*cached_ptr_)[final_idx];
+        } else {
+            auto ps = data_ptr_.lock();
+            if (!ps) throw std::runtime_error("Data expired");
+            return (*ps)[final_idx];
+        }
+    }
     //-------------------------------Operator()
     template<typename... Indices>
     T operator()(Indices... indices) const { // (1,2,3) overload
@@ -165,7 +180,8 @@ public:
         }
 
         if (!is_contiguous()) {
-            return copy().reshape(new_shape);
+            throw std::runtime_error("Currently non contiguous data not supported");
+            //return copy().reshape(new_shape);
         }
 
         std::vector<size_t> new_stride = compute_strides(new_shape);

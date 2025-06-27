@@ -29,7 +29,8 @@ namespace tensrOps {
             new_stride.push_back(tensor.stride()[axis]);
         }
 
-        return tensrLens::lens<T>(tensor.data(), new_shape, new_stride, tensor.offset());
+
+        return tensrLens::lens<T>(tensor.data().lock(), new_shape, new_stride, tensor.offset());
     }
 
     template<typename T>
@@ -37,7 +38,7 @@ namespace tensrOps {
         std::vector<size_t> perm(tensor.rank());
         std::iota(perm.begin(), perm.end(), 0);
         std::reverse(perm.begin(), perm.end());
-        return transpose(tensor, perm)
+        return transpose(tensor, perm);
     }
 
 
@@ -61,7 +62,7 @@ namespace tensrOps {
             new_stride.push_back(lens.stride()[axis]);
         }
 
-        return tensrLens::lens<T>(lens.data(), new_shape, new_stride, lens.offset());
+        return tensrLens::lens<T>(lens.data().lock(), new_shape, new_stride, lens.offset());
     }
 
     template<typename T>
@@ -104,7 +105,7 @@ namespace tensrOps {
             new_offset += start * orig_stride[i];
         }
 
-        return tensrLens::lens<T>(tensor.data(), new_shape, new_stride, new_offset);
+        return tensrLens::lens<T>(tensor.data().lock(), new_shape, new_stride, new_offset);
     }
 
     template<typename T>
@@ -138,6 +139,6 @@ namespace tensrOps {
             new_offset += start * orig_stride[i];
         }
 
-        return tensrLens::lens<T>(lensW.data(), new_shape, new_stride, new_offset);
+        return tensrLens::lens<T>(lensW.data().lock(), new_shape, new_stride, new_offset);
     }
 }
