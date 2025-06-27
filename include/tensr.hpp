@@ -93,6 +93,11 @@ public:
     tensrLens::lens<T> transpose(const std::vector<size_t> perm) {
         return tensrOps::transpose(*this, perm);
     }
+
+    //-------------------------------------view()
+    tensrLens::lens<T> view() const {
+        return tensrLens::lens<T>(data_ptr_, shape_, stride, offset);
+    }
 };
 
 }
