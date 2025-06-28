@@ -42,6 +42,14 @@ public:
     size_t rank() const override { return rank_; }
     size_t offset() const override { return offset_; }
 
+    //--------------------------------Setter functions
+    void set_shape(const std::vector<size_t>& tshape) {
+        if (compute_total_size(tshape) != compute_total_size(shape_)) throw std::invalid_argument("Cannot reshape lens: total size mismatch.");
+        shape_ = std::move(tshape);
+        stride_ = compute_strides(tshape);
+        total_size_ = compute_total_size(tshape);
+        rank_ = compute_rank(tshape);
+    }
     //--------------------------------At()
     T& at(const std::vector<size_t>& indices) override {
         size_t flat_index = indexUtils::flat_index(indices, shape_, stride_);
@@ -172,20 +180,12 @@ public:
         std::vector<size_t> flat_stride = { 1 };
         return lens<T>(data_ptr_.lock(), flat_shape, flat_stride, offset_);
     }
-    //-------------------------------reshape()
-    tensrLens::lens<T> reshape(const std::vector<size_t>& new_shape) const {
-        size_t new_total = compute_total_size(new_shape);
-        if (new_total != total_size_) {
-            throw std::invalid_argument("reshape: new shape does not match total size");
+    //-------------------------------------Fill()
+    void fill(const T& value) {
+        for (size_t i = 0; i < size(); ++i) {
+            auto idx = indexUtils::unflatten_index(i, shape_);
+            at(idx) = value;
         }
-
-        if (!is_contiguous()) {
-            throw std::runtime_error("Currently non contiguous data not supported");
-            //return copy().reshape(new_shape);
-        }
-
-        std::vector<size_t> new_stride = compute_strides(new_shape);
-        return tensrLens::lens<T>(data_ptr_.lock(), new_shape, new_stride, offset_);
     }
     //-------------------------------Cache 
     void cache_data_ptr() {

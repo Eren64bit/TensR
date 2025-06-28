@@ -48,9 +48,6 @@ int main() {
         auto lF = l.flatten();
         std::cout << "\nFlattened lens info:\n";
         lF.info();
-        auto lR = lF.reshape({2,3});
-        std::cout << "\nReshaped lens info:\n";
-        lR.info();
 
         // 7. Copy
         auto t2 = l.copy();
@@ -79,24 +76,11 @@ int main() {
             auto idx = indexUtils::unflatten_index(i, shape);
             t3.at(idx) = static_cast<float>(10 * (i + 1));
         }
-        auto expr = t + t3; // lazy addition
+        auto expr = tensrLazy::leaf(t) + tensrLazy::leaf(t3);
         auto result = tensrLazy::materialize(*expr);
         std::cout << "\nLazy add materialized result info:\n";
         result.info();
         std::cout << "Lazy add result (1,2): " << result.at({1,2}) << std::endl;
-
-        // 11. Hatalı erişim testleri
-        try {
-            l(5,0); // Hatalı indeks
-        } catch (const std::exception& e) {
-            std::cout << "\nExpected error (out of bounds): " << e.what() << std::endl;
-        }
-
-        try {
-            l.reshape({4,2}); // Hatalı reshape
-        } catch (const std::exception& e) {
-            std::cout << "Expected error (reshape): " << e.what() << std::endl;
-        }
 
     } catch (const std::exception& e) {
         std::cout << "Unexpected error: " << e.what() << std::endl;

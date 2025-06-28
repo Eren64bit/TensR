@@ -72,6 +72,7 @@ public:
     void set_data();
 
     void set_shape(const std::vector<size_t>& tshape) {
+        if (compute_total_size(tshape) != compute_total_size(shape_)) throw std::invalid_argument("Cannot reshape tensor: total size mismatch.");
         shape_ = std::move(tshape);
         stride_ = compute_strides(tshape);
         total_size_ = compute_total_size(tshape);
@@ -97,6 +98,13 @@ public:
     //-------------------------------------view()
     tensrLens::lens<T> view() const {
         return tensrLens::lens<T>(data_ptr_, shape_, stride_, offset_);
+    }
+    //-------------------------------------Fill()
+    void fill(const T& value) {
+        for (size_t i = 0; i < size(); ++i) {
+            auto idx = indexUtils::unflatten_index(i, shape_);
+            at(idx) = value;
+        }
     }
 
     //-------------------------------------info()

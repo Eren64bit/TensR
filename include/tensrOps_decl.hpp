@@ -36,4 +36,31 @@ namespace tensrOps {
 
     template<typename T>
     tensrLens::lens<T> slice(const tensrLens::lens<T>& lensW, const std::vector<SliceRange>& ranges);
+
+    //------------------------------Reshape()
+    template<typename T>
+    tensrLens::lens<T> reshape(const tensr::Tensr<T>& tensor, const std::vector<size_t>& shape);
+
+    template<typename T>
+    tensrLens::lens<T> reshape(const tensrLens::lens<T>& lens, const std::vector<size_t>& shape);
+
+    //-------------------------------Squeeze()
+    template<typename T>
+    tensrLens::lens<T> squeeze(const tensr::Tensr<T>& tensor);
+
+    template<typename T>
+    tensrLens::lens<T> squeeze(const tensrLens::lens<T>& lens);
+
+    template<typename T>
+    tensrLens::lens<T> squeeze(const tensr::Tensr<T>& tensor, const int axis);
+
+    template<typename T>
+    tensrLens::lens<T> squeeze(const tensrLens::lens<T>& lens, const int axis);
+
+    //-------------------------------Unsqueeze()
+    template<typename T>
+    tensrLens::lens<T> unsqueeze(const tensr::Tensr<T>& tensor, const int axis);
+
+    template<typename T>
+    tensrLens::lens<T> unsqueeze(const tensrLens::lens<T>& lens, const int axis);
 }
