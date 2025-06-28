@@ -127,7 +127,7 @@ std::shared_ptr<tensrLazy::tensrExpr<T>> leaf(const tensrLens::lens<T>& l) {
 }
 
 }
-
+//--------------------------------
 template<typename L, typename R>
 auto operator+(const L& left, const R& right)
     -> std::enable_if_t<
@@ -150,7 +150,7 @@ auto operator-(const L& left, const R& right)
         std::shared_ptr<tensrLazy::tensrExpr<tensrLazy::tensor_value_type_t<L>>>
     >
 {
-    using T = tensor_value_type_t<L>;
+    using T = tensrLazy::tensor_value_type_t<L>;
     auto lhs_leaf = leaf(left);
     auto rhs_leaf = leaf(right);
     return std::make_shared<tensrLazy::binaryExpr<T>>(lhs_leaf, rhs_leaf, [](T a, T b) { return a - b; });
@@ -164,7 +164,7 @@ auto operator*(const L& left, const R& right)
         std::shared_ptr<tensrLazy::tensrExpr<tensrLazy::tensor_value_type_t<L>>>
     >
 {
-    using T = tensor_value_type_t<L>;
+    using T = tensrLazy::tensor_value_type_t<L>;
     auto lhs_leaf = leaf(left);
     auto rhs_leaf = leaf(right);
     return std::make_shared<tensrLazy::binaryExpr<T>>(lhs_leaf, rhs_leaf, [](T a, T b) { return a * b; });
@@ -176,7 +176,7 @@ auto operator-(const T& operand)
         std::shared_ptr<tensrLazy::tensrExpr<tensrLazy::tensor_value_type_t<T>>>
     >
 {
-    using ValueT = tensor_value_type_t<T>;
+    using ValueT = tensrLazy::tensor_value_type_t<T>;
     auto operand_leaf = leaf(operand);
     return std::make_shared<tensrLazy::unaryExpr<ValueT>>(operand_leaf, [](ValueT a) { return -a; });
 }
@@ -187,7 +187,7 @@ auto abs(const T& operand)
         std::shared_ptr<tensrLazy::tensrExpr<tensrLazy::tensor_value_type_t<T>>>
     >
 {
-    using ValueT = tensor_value_type_t<T>;
+    using ValueT = tensrLazy::tensor_value_type_t<T>;
     auto operand_leaf = leaf(operand);
     return std::make_shared<tensrLazy::unaryExpr<ValueT>>(operand_leaf, [](ValueT a) { return std::abs(a); });
 }
@@ -198,10 +198,9 @@ auto sqrt(const T& operand)
        std::shared_ptr<tensrLazy::tensrExpr<tensrLazy::tensor_value_type_t<T>>>
        >
 {
-    using ValueT = tensor_value_type_t<T>;
+    using ValueT = tensrLazy::tensor_value_type_t<T>;
     auto operand_leaf = leaf(operand);
-    return std::make_shared<tensrLazy::unaryExpr<ValueT>>(operand_leaf, 
-                                              [](ValueT a) { return std::sqrt(a); });
+    return std::make_shared<tensrLazy::unaryExpr<ValueT>>(operand_leaf, [](ValueT a) { return std::sqrt(a); });
 }
 
 
