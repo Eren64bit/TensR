@@ -25,6 +25,7 @@ inline size_t flat_index(const std::vector<size_t>& indices, const std::vector<s
         result += indices[i] * strides[i];
     }
     return result;
+    //
 }
 
 
@@ -68,6 +69,7 @@ inline int normalize_slice_index(int idx, size_t dim_size, bool is_stop = false)
         }
     }
     return idx;
+    //
 }
 
 
