@@ -1,4 +1,4 @@
-# Deux ex Machina - Tensr
+# Tensr
 
 **Tensr** is a modern, extensible C++ tensor library for numerical and scientific computing. It provides efficient N-dimensional arrays, zero-copy tensor views, broadcasting, slicing, and lazy evaluation with a clean, type-safe API using modern C++17 features.
 
