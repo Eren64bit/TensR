@@ -14,6 +14,7 @@ template<typename T>
 class Tensr : public TensrBase<T> {
 private:
     std::shared_ptr<std::vector<T>> data_ptr_; // data pointer to real data 
+    T* gpu_data_ = nullptr;
 
     std::vector<size_t> shape_; //Tensor shape
     std::vector<size_t> stride_; //tensor stride
