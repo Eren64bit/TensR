@@ -49,7 +49,7 @@ public:
         }
     }
 
-    explicit Tensr(const std::vector<size_t>& shape, const T& fill_value = T{}) : shape_(std::move(shape)) {
+    explicit Tensr(const std::vector<size_t>& shape, const T& fill_value) : shape_(std::move(shape)) {
         stride_ = compute_strides(shape);
         total_size_ = compute_total_size(shape);
         rank_ = compute_rank(shape);
