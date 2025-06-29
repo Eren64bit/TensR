@@ -224,6 +224,10 @@ public:
     }
 
     //-------------------------------------Free functions implementations
+    tensrLens::lens<T> reshape(const std::vector<size_t>& shape) {
+        return tensrOps::reshape(*this, shape);
+    }
+
     tensrLens::lens<T> transpose(const std::vector<size_t> perm) {
         return tensrOps::transpose(*this, perm);
     }
@@ -231,6 +235,15 @@ public:
     tensrLens::lens<T> slice(const std::vector<tensrOps::SliceRange>& ranges) {
         return tensrOps::slice(*this, ranges);
     }
+
+    tensrLens::lens<T> squeeze() {
+        return tensrOps::squeeze(*this);
+    }
+
+    tensrLens::lens<T> unsqueeze(const int axis) {
+        return tensrOps::unsqueeze(*this, axis);
+    }
+
 };
 
 }
