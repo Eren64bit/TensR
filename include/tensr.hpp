@@ -36,7 +36,7 @@ public:
         std::fill(data_ptr_->begin(), data_ptr_->end(), 0);
     }
 
-    Tensr(const std::vector<size_t>& shape, const std::vector<T>& data) : shape_(std::move(shape)) { // Tensr Constructer with data
+    explicit Tensr(const std::vector<size_t>& shape, const std::vector<T>& data) : shape_(std::move(shape)) { // Tensr Constructer with data
 	    stride_ = compute_strides(shape);
         total_size_ = compute_total_size(shape);
         rank_ = compute_rank(shape);
@@ -47,6 +47,16 @@ public:
         if (data_ptr_->size() != total_size_) {
             throw std::runtime_error("Data and Total size does not match up");
         }
+    }
+
+    explicit Tensr(const std::vector<size_t>& shape, const T& fill_value = T{}) : shape_(std::move(shape)) {
+        stride_ = compute_strides(shape);
+        total_size_ = compute_total_size(shape);
+        rank_ = compute_rank(shape);
+        offset_ = 0;
+
+        data_ptr_ = std::make_shared<std::vector<T>>(total_size_);
+        fill(fill_value);
     }
 
     std::weak_ptr<std::vector<T>> data() const override { return data_ptr_; } // return data_ptr make sure before use it, Dereference it
@@ -68,9 +78,21 @@ public:
         size_t flat_index = indexUtils::flat_index(indices, shape_, stride_);
         return (*data_ptr_)[flat_index];
     }
-    //------------------------------------------------------Setter functions
-    void set_data();
+    //------------------------------------------------------At linear functions
+    T& at_linear(size_t linear_idx) {
+        if (!is_contiguous()) {
+            throw std::runtime_error("at_linear() called on non-contiguous tensor");
+        }
+        return (*data_ptr_)[linear_idx];
+    }
 
+    const T& at_linear(size_t linear_idx) const {
+        if (!is_contiguous()) {
+            throw std::runtime_error("at_linear() called on non-contiguous tensor");
+        }
+        return (*data_ptr_)[linear_idx];
+    }
+    //------------------------------------------------------Setter functions
     void set_shape(const std::vector<size_t>& tshape) {
         if (compute_total_size(tshape) != compute_total_size(shape_)) throw std::invalid_argument("Cannot reshape tensor: total size mismatch.");
         shape_ = std::move(tshape);
@@ -91,8 +113,24 @@ public:
     }
     
     //-------------------------------------Free functions implementations
+    tensrLens::lens<T> reshape(const std::vector<size_t>& target_shape) {
+        return tensrOps::reshape(*this, target_shape);
+    }
+
     tensrLens::lens<T> transpose(const std::vector<size_t> perm) {
         return tensrOps::transpose(*this, perm);
+    }
+
+    tensrLens::lens<T> slice(const std::vector<tensrOps::SliceRange>& ranges) {
+        return tensrOps::slice(*this, ranges);
+    }
+
+    tensrLens::lens<T> squeeze() {
+        return tensrOps::squeeze(*this);
+    }
+
+    tensrLens::lens<T> unsqueeze(const int axis) {
+        return tensrOps::unsqueeze(*this, axis);
     }
 
     //-------------------------------------view()
@@ -101,9 +139,14 @@ public:
     }
     //-------------------------------------Fill()
     void fill(const T& value) {
-        for (size_t i = 0; i < size(); ++i) {
-            auto idx = indexUtils::unflatten_index(i, shape_);
-            at(idx) = value;
+        if (is_contiguous()) {
+            for (size_t i = 0; i < total_size_; ++i)
+                at_linear(i) = value;
+        } else {
+            for (size_t i = 0; i < size(); ++i) {
+                auto idx = indexUtils::unflatten_index(i, shape_);
+                at(idx) = value;
+            }
         }
     }
 

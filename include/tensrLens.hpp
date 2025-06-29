@@ -178,13 +178,22 @@ public:
     tensrLens::lens<T> flatten() const {
         std::vector<size_t> flat_shape = { total_size_ };
         std::vector<size_t> flat_stride = { 1 };
+
+        if (!is_contiguous()) {
+            throw std::runtime_error("Flatten requires contiguous tensor");
+        }
         return lens<T>(data_ptr_.lock(), flat_shape, flat_stride, offset_);
     }
     //-------------------------------------Fill()
     void fill(const T& value) {
-        for (size_t i = 0; i < size(); ++i) {
-            auto idx = indexUtils::unflatten_index(i, shape_);
-            at(idx) = value;
+        if (is_contiguous()) {
+            for (size_t i = 0; i < total_size_; ++i)
+                at_linear(i) = value;
+        } else {
+            for (size_t i = 0; i < size(); ++i) {
+                auto idx = indexUtils::unflatten_index(i, shape_);
+                at(idx) = value;
+            }
         }
     }
     //-------------------------------Cache 
