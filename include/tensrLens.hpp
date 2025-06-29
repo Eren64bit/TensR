@@ -224,8 +224,8 @@ public:
     }
 
     //-------------------------------------Free functions implementations
-    tensrLens::lens<T> reshape(const std::vector<size_t>& shape) {
-        return tensrOps::reshape(*this, shape);
+    tensrLens::lens<T> reshape(const std::vector<size_t>& target_shape) {
+        return tensrOps::reshape(*this, target_shape);
     }
 
     tensrLens::lens<T> transpose(const std::vector<size_t> perm) {

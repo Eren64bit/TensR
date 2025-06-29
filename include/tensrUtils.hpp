@@ -25,7 +25,7 @@ constexpr size_t compute_total_size(const std::array<size_t, N>& shape) {
     for (size_t i = 0; i < N; i++) {
         total *= shape[i];
     }
-    return total
+    return total;
 }
 
 inline std::vector<size_t> compute_strides(const std::vector<size_t>& shape) {
