@@ -235,7 +235,7 @@ namespace tensrOps {
         new_shape.reserve(tensor.shape().size() + 1);
         for (size_t i = 0; i < tensor.shape().size(); i++) {
             if (i == axis) new_shape.push_back(1);
-            if (i < tensor.shape.size()) new_shape.push_back(tensor.shape()[i]);
+            if (i < tensor.shape().size()) new_shape.push_back(tensor.shape()[i]);
         }
 
         std::vector<size_t> new_stride = compute_strides(new_shape);
@@ -249,7 +249,7 @@ namespace tensrOps {
         new_shape.reserve(lens.shape().size() + 1);
         for (size_t i = 0; i < lens.shape().size(); i++) {
             if (i == axis) new_shape.push_back(1);
-            if (i < lens.shape.size()) new_shape.push_back(lens.shape()[i]);
+            if (i < lens.shape().size()) new_shape.push_back(lens.shape()[i]);
         }
 
         std::vector<size_t> new_stride = compute_strides(new_shape);
