@@ -2,25 +2,22 @@
 
 #include "tensrLens.hpp"
 #include "tensr.hpp"
+#include "tensrBroadcast.hpp"
 #include <functional>
-#include <type_traits>
 #include <memory>
 #include <cmath>
-
-
-// Trait to check if it's a tensor or lens
-template<typename T>
-struct is_tensor_or_lens : std::false_type {};
-
-template<typename T>
-struct is_tensor_or_lens<tensr::Tensr<T>> : std::true_type {};
-
-template<typename T>
-struct is_tensor_or_lens<tensrLens::lens<T>> : std::true_type {};
+#include <type_traits>
+#include "indexUtils.hpp"
 
 namespace tensrLazy {
 
-// Base expression interface
+
+template<typename T> struct is_tensor_or_lens : std::false_type {};
+template<typename T> struct is_tensor_or_lens<tensr::Tensr<T>> : std::true_type {};
+template<typename T> struct is_tensor_or_lens<tensrLens::lens<T>> : std::true_type {};
+
+// Base Expression
+
 template<typename T>
 class tensrExpr {
 public:
@@ -29,7 +26,7 @@ public:
     virtual ~tensrExpr() {}
 };
 
-// Leaf expression wrapping a lens
+// Leaf (Tensor veya Lens)
 template<typename T>
 class tensrLeaf : public tensrExpr<T> {
 private:
@@ -49,46 +46,7 @@ public:
     }
 };
 
-// Broadcast utility
-template<typename T>
-std::shared_ptr<tensrExpr<T>> broadcast_to(const std::shared_ptr<tensrExpr<T>>& expr, const std::vector<size_t>& target_shape) {
-    auto leaf_ptr = std::dynamic_pointer_cast<tensrLeaf<T>>(expr);
-    if (!leaf_ptr) {
-        throw std::runtime_error("Only leaf expressions can be broadcasted in current lazy system");
-    }
-    const auto& lens_ref = leaf_ptr->view();
-    auto broadcasted_lens = broadcast::broadcast_to(lens_ref, target_shape);
-    return std::make_shared<tensrLeaf<T>>(broadcasted_lens);
-}
-
-// Binary expression
-template<typename T>
-class binaryExpr : public tensrExpr<T> {
-private:
-    std::shared_ptr<tensrExpr<T>> lhs_, rhs_;
-    std::function<T(T, T)> op;
-    std::vector<size_t> shape_;
-public:
-    binaryExpr(const std::shared_ptr<tensrExpr<T>>& lhs, const std::shared_ptr<tensrExpr<T>>& rhs, std::function<T(T, T)> f)
-        : lhs_(lhs), rhs_(rhs), op(std::move(f)) {
-        auto lhs_shape = lhs_->shape();
-        auto rhs_shape = rhs_->shape();
-        if (lhs_shape != rhs_shape) {
-            throw std::invalid_argument("Shapes not broadcasted correctly before binaryExpr construction.");
-        }
-        shape_ = lhs_shape;
-    }
-
-    T eval_at(const std::vector<size_t>& idx) const override {
-        return op(lhs_->eval_at(idx), rhs_->eval_at(idx));
-    }
-
-    std::vector<size_t> shape() const override {
-        return shape_;
-    }
-};
-
-// Unary expression
+// Unary Expression
 template<typename T>
 class unaryExpr : public tensrExpr<T> {
 private:
@@ -109,19 +67,77 @@ public:
     }
 };
 
-// Materialize expression to a concrete tensor
+// Binary Expression
+template<typename T>
+class binaryExpr : public tensrExpr<T> {
+private:
+    std::shared_ptr<tensrExpr<T>> lhs_, rhs_;
+    std::function<T(T, T)> op_;
+    std::vector<size_t> shape_;
+
+public:
+    binaryExpr(std::shared_ptr<tensrExpr<T>> lhs, std::shared_ptr<tensrExpr<T>> rhs, std::function<T(T, T)> f)
+        : lhs_(std::move(lhs)), rhs_(std::move(rhs)), op_(std::move(f)) {
+        if (lhs_->shape() != rhs_->shape()) {
+            throw std::invalid_argument("Shapes not broadcasted correctly before binaryExpr");
+        }
+        shape_ = lhs_->shape();
+    }
+
+    T eval_at(const std::vector<size_t>& idx) const override {
+        return op_(lhs_->eval_at(idx), rhs_->eval_at(idx));
+    }
+
+    std::vector<size_t> shape() const override {
+        return shape_;
+    }
+};
+
+// Broadcast Expression
+template<typename T>
+class broadcastExpr : public tensrExpr<T> {
+private:
+    std::shared_ptr<tensrExpr<T>> base_;
+    std::vector<size_t> shape_, stride_;
+
+public:
+    broadcastExpr(const std::shared_ptr<tensrExpr<T>>& base, const std::vector<size_t>& target_shape)
+        : base_(base), shape_(target_shape) {
+        if (!broadcast::can_broadcast(base_->shape(), shape_)) {
+            throw std::runtime_error("broadcastExpr: incompatible shapes");
+        }
+        stride_ = broadcast::compute_broadcast_stride(base_->shape(), shape_);
+    }
+
+    T eval_at(const std::vector<size_t>& idx) const override {
+        std::vector<size_t> mapped_idx(base_->shape().size());
+        size_t offset = idx.size() - mapped_idx.size();
+
+        for (size_t i = 0; i < mapped_idx.size(); ++i) {
+            mapped_idx[i] = (base_->shape()[i] == 1) ? 0 : idx[offset + i];
+        }
+        return base_->eval_at(mapped_idx);
+    }
+
+    std::vector<size_t> shape() const override {
+        return shape_;
+    }
+};
+
+// Materialize Expression
+
 template<typename T>
 tensr::Tensr<T> materialize(const tensrExpr<T>& expr) {
     auto shape = expr.shape();
-    tensr::Tensr<T> out(shape);
-    for (size_t i = 0; i < out.size(); i++) {
+    tensr::Tensr<T> result(shape);
+    for (size_t i = 0; i < result.size(); ++i) {
         auto idx = indexUtils::unflatten_index(i, shape);
-        out.at(idx) = expr.eval_at(idx);
+        result.at(idx) = expr.eval_at(idx);
     }
-    return out;
+    return result;
 }
 
-// Leaf wrappers
+// Leaf Helpers
 template<typename T>
 std::shared_ptr<tensrExpr<T>> leaf(const tensr::Tensr<T>& t) {
     return std::make_shared<tensrLeaf<T>>(t);
@@ -132,23 +148,28 @@ std::shared_ptr<tensrExpr<T>> leaf(const tensrLens::lens<T>& l) {
     return std::make_shared<tensrLeaf<T>>(l);
 }
 
-// Helper for binary ops with broadcasting
+// Broadcast Helpers
+template<typename T>
+std::shared_ptr<tensrExpr<T>> broadcast_to(std::shared_ptr<tensrExpr<T>> base, const std::vector<size_t>& target_shape) {
+    return std::make_shared<broadcastExpr<T>>(base, target_shape);
+}
+
+// Binary with auto broadcast
 template<typename T>
 std::shared_ptr<tensrExpr<T>> broadcast_binary(
     std::shared_ptr<tensrExpr<T>> lhs,
     std::shared_ptr<tensrExpr<T>> rhs,
-    std::function<T(T,T)> op
+    std::function<T(T, T)> op
 ) {
     if (lhs->shape() != rhs->shape()) {
-        auto target_shape = broadcast::compute_broadcast_shape(lhs->shape(), rhs->shape());
-        lhs = broadcast_to(lhs, target_shape);
-        rhs = broadcast_to(rhs, target_shape);
+        auto target = broadcast::compute_broadcast_shape(lhs->shape(), rhs->shape());
+        lhs = broadcast_to(lhs, target);
+        rhs = broadcast_to(rhs, target);
     }
     return std::make_shared<binaryExpr<T>>(lhs, rhs, op);
 }
 
-// Binary operators
-
+// Binary Ops Macro
 #define DEFINE_BINARY_OP(opname, opfunc) \
 template<typename T> \
 std::shared_ptr<tensrExpr<T>> operator opname (std::shared_ptr<tensrExpr<T>> lhs, std::shared_ptr<tensrExpr<T>> rhs) { \
@@ -159,11 +180,9 @@ DEFINE_BINARY_OP(+, a + b)
 DEFINE_BINARY_OP(-, a - b)
 DEFINE_BINARY_OP(*, a * b)
 DEFINE_BINARY_OP(/, a / b)
-
 #undef DEFINE_BINARY_OP
 
-// Unary operators
-
+// Unary Ops
 template<typename T>
 std::shared_ptr<tensrExpr<T>> operator-(std::shared_ptr<tensrExpr<T>> operand) {
     return std::make_shared<unaryExpr<T>>(operand, [](T a) { return -a; });
@@ -172,36 +191,6 @@ std::shared_ptr<tensrExpr<T>> operator-(std::shared_ptr<tensrExpr<T>> operand) {
 template<typename T>
 std::shared_ptr<tensrExpr<T>> abs(std::shared_ptr<tensrExpr<T>> operand) {
     return std::make_shared<unaryExpr<T>>(operand, [](T a) { return std::abs(a); });
-}
-
-template<typename T>
-std::shared_ptr<tensrExpr<T>> sqrt(std::shared_ptr<tensrExpr<T>> operand) {
-    return std::make_shared<unaryExpr<T>>(operand, [](T a) { return std::sqrt(a); });
-}
-
-template<typename T>
-std::shared_ptr<tensrExpr<T>> exp(std::shared_ptr<tensrExpr<T>> operand) {
-    return std::make_shared<unaryExpr<T>>(operand, [](T a) { return std::exp(a); });
-}
-
-template<typename T>
-std::shared_ptr<tensrExpr<T>> log(std::shared_ptr<tensrExpr<T>> operand) {
-    return std::make_shared<unaryExpr<T>>(operand, [](T a) { return std::log(a); });
-}
-
-template<typename T>
-std::shared_ptr<tensrExpr<T>> sin(std::shared_ptr<tensrExpr<T>> operand) {
-    return std::make_shared<unaryExpr<T>>(operand, [](T a) { return std::sin(a); });
-}
-
-template<typename T>
-std::shared_ptr<tensrExpr<T>> cos(std::shared_ptr<tensrExpr<T>> operand) {
-    return std::make_shared<unaryExpr<T>>(operand, [](T a) { return std::cos(a); });
-}
-
-template<typename T>
-std::shared_ptr<tensrExpr<T>> tan(std::shared_ptr<tensrExpr<T>> operand) {
-    return std::make_shared<unaryExpr<T>>(operand, [](T a) { return std::tan(a); });
 }
 
 } // namespace tensrLazy
