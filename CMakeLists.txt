@@ -1,0 +1,37 @@
+cmake_minimum_required(VERSION 3.18)
+project(TensRR LANGUAGES CXX CUDA)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CUDA_STANDARD 14)
+set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+
+include_directories(
+    ${PROJECT_SOURCE_DIR}/include
+    ${PROJECT_SOURCE_DIR}/include/CUDA
+)
+
+file(GLOB_RECURSE TENSRR_HEADERS
+    ${PROJECT_SOURCE_DIR}/include/*.hpp
+    ${PROJECT_SOURCE_DIR}/include/*.h
+    ${PROJECT_SOURCE_DIR}/include/CUDA/*.cuh
+)
+
+file(GLOB_RECURSE TENSRR_SOURCES
+    ${PROJECT_SOURCE_DIR}/include/*.cpp
+    ${PROJECT_SOURCE_DIR}/include/CUDA/*.cu
+)
+
+add_library(TensRR STATIC
+    ${TENSRR_HEADERS}
+    ${TENSRR_SOURCES}
+)
+
+set_target_properties(TensRR PROPERTIES
+    CUDA_SEPARABLE_COMPILATION ON
+    POSITION_INDEPENDENT_CODE ON
+)
+
+set_target_properties(TensRR PROPERTIES
+    CUDA_ARCHITECTURES 52 60 61 75 86
+)
