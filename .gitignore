@@ -1,0 +1,22 @@
+# build Files
+*.exe
+*.obj
+*.pdb
+*.ilk
+*.lib
+*.exp
+*.dll
+
+# build directories
+Debug/
+Release/
+x64/
+
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.VC.db
+*.VC.opendb
+# VSCode
+.vscode/
