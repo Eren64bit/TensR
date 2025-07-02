@@ -1,6 +1,7 @@
 # Tensr
 
-**Tensr** is a modern, extensible C++ tensor library for numerical and scientific computing. It provides efficient N-dimensional arrays, zero-copy tensor views, broadcasting, slicing, reshaping, lazy evaluation, and more, all with a clean, type-safe API using modern C++17 features.
+**Tensr** is a modern, extensible C++ tensor library for numerical and scientific computing. It provides efficient N-dimensional arrays, zero-copy tensor views, broadcasting, slicing, reshaping, lazy evaluation, and more, all with a clean, type-safe API using modern C++17 features. CUDA acceleration is available for fast elementwise operations on supported hardware.
+
 
 ---
 
@@ -17,6 +18,7 @@
 - **Exception-safe API** with robust error handling
 - **Modern C++**: smart pointers, templates, type traits
 - **Header-only**: easy to integrate into any project
+- **CUDA acceleration** for elementwise operations (`int`, `float`, `double`)
 
 ---
 
@@ -26,6 +28,7 @@
 
 - C++17 or newer compiler (GCC, Clang, MSVC)
 - No external dependencies
+- CUDA Toolkit and compatible NVIDIA GPU for CUDA suppor
 
 ### Build
 
@@ -127,6 +130,22 @@ int main() {
     auto div = t3 / t;
     div.info();
 
+    std::vector<size_t> shape = {1000, 1000};
+    tensr::Tensr<float> a(shape, 1.0f);
+    tensr::Tensr<float> b(shape, 2.0f);
+
+    // Elementwise addition on GPU
+    auto c = tensrCUDA::tensrCUDA<float>::add(a, b);
+
+    // Elementwise subtraction on GPU
+    auto d = tensrCUDA::tensrCUDA<float>::subtract(a, b);
+
+    // Elementwise multiplication on GPU
+    auto e = tensrCUDA::tensrCUDA<float>::multiply(a, b);
+
+    // You can access results as usual
+    std::cout << "c(0,0): " << c.at({0,0}) << std::endl;
+
     // 10. Error handling
     try {
         l(5,0); // Out of bounds
@@ -177,6 +196,10 @@ include/
     tensrBroadcast.hpp
     tensrLazy.hpp
     tensrSugar.hpp
+    CUDA/
+        tensrCUDA.h
+        tensrCUDA.cuh
+        tensrCUDA.cu
 main.cpp
 ```
 
