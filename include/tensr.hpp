@@ -10,6 +10,18 @@
 
 namespace tensr {
 
+    enum class Mode { NORMAL, LAZY, CUDA};
+
+    static Mode currentMode = Mode::NORMAL;
+
+    void set_mode(Mode m) {
+        currentMode = m;
+    }
+
+    Mode get_mode() {
+        return currentMode;
+    }
+
 template<typename T>
 class Tensr : public TensrBase<T> {
 private:
