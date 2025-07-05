@@ -12,15 +12,7 @@ namespace tensr {
 
     enum class Mode { NORMAL, LAZY, CUDA};
 
-    static Mode currentMode = Mode::NORMAL;
-
-    void set_mode(Mode m) {
-        currentMode = m;
-    }
-
-    Mode get_mode() {
-        return currentMode;
-    }
+    
 
 template<typename T>
 class Tensr : public TensrBase<T> {
@@ -33,6 +25,8 @@ private:
     size_t total_size_; // Tensor total size
     size_t rank_; // Tensor rank (shape size)
     size_t offset_; // Tensor offset
+
+    Mode mode_ = Mode::NORMAL; // Tensor mode, default is NORMAL
 
     static_assert(std::is_arithmetic_v<T>, "error:Tensor type must be arithmetic"); // make sure T is arithmetic
     
@@ -80,6 +74,8 @@ public:
 
     size_t rank() const override { return rank_; } // return size_t rank (shape size)
     size_t offset() const override { return offset_; } // return size_t offset 
+
+    Mode mode() const override { return mode_; } // return tensor mode
 
     //------------------------------------------------------At functions
     T& at(const std::vector<size_t>& indices) override {

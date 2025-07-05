@@ -17,6 +17,8 @@ public:
     virtual size_t rank() const = 0; // return tensor or lens rank(Shape size)
     virtual size_t offset() const = 0; // return tensor or lens offset(distance from 0 index data)
 
+    virtual tensr::Mode mode() const = 0; // return tensor or lens mode
+
     virtual T& at(const std::vector<size_t>& indices) = 0;
     virtual const T& at(const std::vector<size_t>& indices) const = 0;
 

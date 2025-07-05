@@ -23,6 +23,8 @@ private:
     size_t total_size_;
     size_t rank_;
 
+    tensr::Mode mode_ = tensr::Mode::NORMAL; // Tensor lens mode, default is NORMAL
+
     static_assert(std::is_arithmetic_v<T>, "error:Tensor type must be arithmetic"); // make sure T is arithmetic
 
 public:
@@ -41,6 +43,8 @@ public:
     
     size_t rank() const override { return rank_; }
     size_t offset() const override { return offset_; }
+
+    tensr::Mode mode() const override { return mode_; } // return lens mode
 
     //--------------------------------Setter functions
     void set_shape(const std::vector<size_t>& tshape) {
