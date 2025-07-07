@@ -9,6 +9,9 @@
 #include <vector>
 #include <stdexcept>
 
+namespace tensrCUDA {
+    inline bool cuda_available();
+}
 
 enum class backendType {
     CPU, // CPU backend
@@ -47,11 +50,14 @@ class tensrBASE {
             static constexpr executionMode mode_ = executionMode::NORMAL; // Default Execution for normal mode
         #endif
 
+        backendType backend_;
         
 
     public:
         // Constructor
-        TensrBase() = default;
+        TensrBase() {
+            backend_ = (tensrCUDA::cuda_available()) ? backendType::GPU : backendType::CPU; // Determine backend type based on CUDA availability
+        }
         virtual ~TensrBase() = default; // virtual destructor for base class
 
         virtual std::shared_ptr<std::vector<T>> data() const = 0; // pure virtual function to get data pointer
@@ -98,6 +104,13 @@ class tensrBASE {
             Derived result = static_cast<Derived&>(*this);
             result.policy_ = new_policy;
             return result; // Return a new instance with the updated policy
+        }
+
+        void set_backend(backendType backend) {
+            if (backend == backendType::GPU && !tensrCUDA::cuda_available()) {
+                throw std::runtime_error("GPU backend is not available on this system.");
+            }
+            backend_ = backend;
         }
 
         //helper function to calculate the flattened index from multi-dimensional indices
