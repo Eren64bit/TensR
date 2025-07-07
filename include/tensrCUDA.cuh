@@ -1,6 +1,7 @@
 
 #include <cuda_runtime.h>
 #include <vector>
+#include <stdexcept>
 
 namespace tensrCUDA {
 inline bool cuda_available() {
@@ -34,8 +35,30 @@ class memoryPool {
                     }
                 }
             }
+            if (best_fit) {
 
+                if (best_fit->size > size * 1.2) { 
+                    memoryBlock new_block;
+                    new_block.block_ptr_ = static_cast<char*>(best_fit->block_ptr_) + size;
+                    new_block.size = best_fit->size - size;
+                    new_block.in_use = false;
+                    best_fit->size = size;
+                    pool_.push_back(new_block);
+                }
+                best_fit->in_use = true;
+                total_used_ += best_fit->size;
+                return best_fit->block_ptr_;
+            }
             
+            void* new_ptr = nullptr;
+            cudaError_t err = cudaMalloc(&new_ptr, size);
+            if (err != cudaSuccess) throw std::runtime_error("CUDA malloc failed!");
+
+            pool_.push_back(memoryBlock{new_ptr, size, true});
+            total_allocated_ += size;
+            total_used_ += size;
+            return new_ptr;
+
         }
 
         void free(void* ptr); // clear memory block data
