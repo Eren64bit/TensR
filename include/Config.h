@@ -13,7 +13,13 @@
 #define TENSR_MODE TENSR_MODE_NORMAL
 #endif
 
-#if TENSR_MODE == TENSR_MODE_CUDA
+#if defined(__CUDACC__) || defined(__CUDABUILD__)
+    #define TENSR_HAS_CUDA 1
+#else
+    #define TENSR_HAS_CUDA 0
+#endif
+
+#if TENSR_MODE == TENSR_MODE_CUDA && TENSR_HAS_CUDA == 1
     #define TENSR_CUDA_ENABLED 1
 #else
     #define TENSR_CUDA_ENABLED 0

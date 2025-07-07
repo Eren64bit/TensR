@@ -3,11 +3,17 @@
 //internal includes
 #include "Config.h"
 
+
 //extarnal includes
 #include <memory>
 #include <vector>
 #include <stdexcept>
 
+
+enum class backendType {
+    CPU, // CPU backend
+    GPU // CUDA backend
+};
 
 //tensrPolicy
 // This enum defines the policy for tensor handling
@@ -40,6 +46,8 @@ class tensrBASE {
         #else 
             static constexpr executionMode mode_ = executionMode::NORMAL; // Default Execution for normal mode
         #endif
+
+        
 
     public:
         // Constructor
