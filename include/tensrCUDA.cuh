@@ -23,6 +23,9 @@ inline void check_cuda(cudaError_t result, const char* msg = "CUDA error") {
     }
 }
 
+
+// Memory pool class for managing GPU memory allocation and deallocation
+/// This class implements a singleton pattern to ensure only one instance manages the memory pool.
 class memoryPool {
 private:
     struct memoryBlock {
