@@ -57,7 +57,7 @@ public:
         return instance;
     }
 
-    /// GPu memory allocation
+    /// GPU memory allocation
     void* allocate(size_t size) {
         std::lock_guard<std::mutex> lock(pool_mutex);
 
