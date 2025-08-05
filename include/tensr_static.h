@@ -52,6 +52,9 @@ public:
 
     [[nodiscard]] const std::vector<size_t>& shape() const { return shape_; }
     [[nodiscard]] const std::vector<size_t>& strides() const { return strides_; }
+
+    [[nodiscard]] size_t size() const { return tensr_utils::compute_size(shape_); }
+    [[nodiscard]] size_t rank() const { return shape_.size(); }
     
     size_t offset() const { return offset_; }
 
@@ -78,6 +81,20 @@ public:
 
     const T& operator()(const std::vector<size_t>& indices) const {
         return at(indices);
+    }
+
+    T& operator[](size_t index) {
+        if (index >= tensr_utils::compute_size(shape_)) {
+            throw std::out_of_range("Index out of bounds.");
+        }
+        return data_[index + offset_];
+    }
+
+    const T& operator[](size_t index) const {
+        if (index >= tensr_utils::compute_size(shape_)) {
+            throw std::out_of_range("Index out of bounds.");
+        }
+        return data_[index + offset_];
     }
     
     // Fill functions
