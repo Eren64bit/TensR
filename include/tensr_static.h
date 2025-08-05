@@ -5,6 +5,9 @@
 #include "tensr_utils.h"
 
 
+template<typename T>
+class tensr_view; // Forward declaration
+
 // TensorStatic<T> represents a fixed-shape, fixed-type tensor.
 // It is an abstract base class that provides a common interface for tensors
 // with static shapes and types. Derived classes must implement the data() method
@@ -110,5 +113,8 @@ public:
         if (!data_) throw std::runtime_error("Cannot fill: data is null.");
         tensr_utils::fill_data<T>::custom(data_.get(), tensr_utils::compute_size(shape_), value);
     }
+
+    // Slice method to create a view of a sub-tensor
+    tensr_view<T> slice(const std::vector<size_t>& start, const std::vector<size_t>& end) const;
 
 };
