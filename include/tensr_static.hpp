@@ -1,12 +1,12 @@
 #pragma once
-
-#include <memory>
-#include <stdexcept>
-#include "tensr_utils.h"
+#include "tensr_metadata.hpp"
+#include "allocator.hpp"
 
 
 template<typename T>
 class tensr_view; // Forward declaration
+
+
 
 // TensorStatic<T> represents a fixed-shape, fixed-type tensor.
 // It is an abstract base class that provides a common interface for tensors
@@ -15,30 +15,20 @@ template<typename T>
 class tensr_static {
 protected:
     std::shared_ptr<T[]> data_;
-    std::vector<size_t> shape_;
-    std::vector<size_t> strides_;
+    tensr_metadata metadata_;
 
-    size_t offset_;
+    static_assert(std::is_arithmetic_v<T>, "error:Tensor type must be arithmetic");
 
 public:
     explicit tensr_static(const std::vector<size_t>& shape, size_t offset = 0)
-        : shape_(shape), offset_(offset) {
-        if (shape.empty()) throw std::invalid_argument("Shape must not be empty.");
-
-        strides_ = tensr_utils::compute_strides(shape_);
-
-        size_t total = tensr_utils::compute_size(shape_);
-        data_ = std::shared_ptr<T[]>(new T[total]);
+        : metadata_(shape, offset) {
+        data_ = std::shared_ptr<T[]>(new T[metadata_.size()]);
     }
 
     explicit tensr_static(const std::vector<size_t>& shape, const T data[], size_t offset = 0)
-        : shape_(shape), offset_(offset) {
-        if (shape.empty()) throw std::invalid_argument("Shape must not be empty.");
+        : metadata_(shape, offset) {
 
-        strides_ = tensr_utils::compute_strides(shape_);
-
-        size_t total = tensr_utils::compute_size(shape_);
-        data_ = std::shared_ptr<T[]>(new T[total]);
+        data_ = std::shared_ptr<T[]>(new T[metadata_.size()]);
         for (size_t i = 0; i < total; ++i) {
             data_[i] = data[i];
         }
@@ -53,29 +43,28 @@ public:
         return data_.get();
     }
 
-    [[nodiscard]] const std::vector<size_t>& shape() const { return shape_; }
-    [[nodiscard]] const std::vector<size_t>& strides() const { return strides_; }
+    [[nodiscard]] const std::vector<size_t>& shape() const { return metadata_.shape(); }
+    [[nodiscard]] const std::vector<size_t>& strides() const { return metadata_.strides(); }
 
-    [[nodiscard]] size_t size() const { return tensr_utils::compute_size(shape_); }
-    [[nodiscard]] size_t rank() const { return shape_.size(); }
+    [[nodiscard]] size_t size() const { return metadata_.size(); }
+    [[nodiscard]] size_t rank() const { return metadata_.shape().size(); }
     
-    size_t offset() const { return offset_; }
 
     // Access element at given indices
     T& at(const std::vector<size_t>& indices) {
-        if (indices.size() != shape_.size()) {
+        if (indices.size() != metadata_.shape().size()) {
             throw std::invalid_argument("Indices size must match shape size.");
         }
-        size_t index = tensr_utils::flatten_index(shape_, strides_, indices);
-        return data_[index + offset_];
+        size_t index = tensr_utils::flatten_index(metadata_.shape(), metadata_.shape(), indices);
+        return data_[index + metadata_.offset()];
     }
 
     const T& at(const std::vector<size_t>& indices) const {
-        if (indices.size() != shape_.size()) {
+        if (indices.size() != metadata_.shape().size()) {
             throw std::invalid_argument("Indices size must match shape size.");
         }
-        size_t index = tensr_utils::flatten_index(shape_, strides_, indices);
-        return data_[index + offset_];
+        size_t index = tensr_utils::flatten_index(metadata_.shape(), metadata_.shape(), indices);
+        return data_[index + metadata_.offset()];
     }
 
     T& operator()(const std::vector<size_t>& indices) {
@@ -87,17 +76,17 @@ public:
     }
 
     T& operator[](size_t index) {
-        if (index >= tensr_utils::compute_size(shape_)) {
+        if (index >= metadata_.size()) {
             throw std::out_of_range("Index out of bounds.");
         }
-        return data_[index + offset_];
+        return data_[index + metadata_.offset()];
     }
 
     const T& operator[](size_t index) const {
-        if (index >= tensr_utils::compute_size(shape_)) {
+        if (index >= metadata_.size()) {
             throw std::out_of_range("Index out of bounds.");
         }
-        return data_[index + offset_];
+        return data_[index + metadata_.offset()];
     }
     
     // Fill functions
@@ -107,14 +96,12 @@ public:
 
     void fill_zeros() {
         if (!data_) throw std::runtime_error("Cannot fill: data is null.");
-        tensr_utils::fill_data<T>::zeros(data_.get(), tensr_utils::compute_size(shape_));
+        tensr_utils::fill_data<T>::zeros(data_.get(), metadata_.size());
     }
     void fill_custom(const T& value) {
         if (!data_) throw std::runtime_error("Cannot fill: data is null.");
-        tensr_utils::fill_data<T>::custom(data_.get(), tensr_utils::compute_size(shape_), value);
+        tensr_utils::fill_data<T>::custom(data_.get(), metadata_.size(), value);
     }
 
-    // Slice method to create a view of a sub-tensor
-    tensr_view<T> slice(const std::vector<size_t>& start, const std::vector<size_t>& end) const;
-
+    
 };
