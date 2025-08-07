@@ -1,37 +1,38 @@
 #pragma once
+
 #include "tensr_metadata.hpp"
 #include "allocator.hpp"
 
 
-template<typename T>
+template<typename T, typename allocator = default_smart_allocator<T>>
 class tensr_view; // Forward declaration
-
-
 
 // TensorStatic<T> represents a fixed-shape, fixed-type tensor.
 // It is an abstract base class that provides a common interface for tensors
 // with static shapes and types. Derived classes must implement the data() method
-template<typename T>
+
+template<typename T, typename allocator = default_smart_allocator<T>>
 class tensr_static {
 protected:
     std::shared_ptr<T[]> data_;
     tensr_metadata metadata_;
+    std::unique_ptr<allocator> alloc_;
 
     static_assert(std::is_arithmetic_v<T>, "error:Tensor type must be arithmetic");
 
 public:
     explicit tensr_static(const std::vector<size_t>& shape, size_t offset = 0)
-        : metadata_(shape, offset) {
-        data_ = std::shared_ptr<T[]>(new T[metadata_.size()]);
+        : metadata_(shape, offset), alloc_(std::make_unique<allocator>()) {
+        data_ = alloc_->allocate(metadata_.size());
     }
 
     explicit tensr_static(const std::vector<size_t>& shape, const T data[], size_t offset = 0)
-        : metadata_(shape, offset) {
+        : metadata_(shape, offset), alloc_(std::make_unique<allocator>()) {
 
-        data_ = std::shared_ptr<T[]>(new T[metadata_.size()]);
+        data_ = alloc_->allocate(metadata_.size());
         for (size_t i = 0; i < total; ++i) {
             data_[i] = data[i];
-        }
+        }   
     }
     
     [[nodiscard]] virtual std::shared_ptr<T[]> data() const {
