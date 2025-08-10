@@ -30,7 +30,7 @@ public:
         : metadata_(shape, offset), alloc_(std::make_unique<allocator>()) {
 
         data_ = alloc_->allocate(metadata_.size());
-        for (size_t i = 0; i < total; ++i) {
+        for (size_t i = 0; i < metadata_.size(); ++i) {
             data_[i] = data[i];
         }   
     }
