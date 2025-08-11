@@ -1,7 +1,7 @@
 #pragma once
 
 #include "allocator.hpp"
-#include "tensr_metadata.hpp"
+#include "tensr_interface.hpp"
 
 template <typename T>
 class tensr_view; // Forward declaration
@@ -12,11 +12,10 @@ class tensr_view; // Forward declaration
 // method
 
 template <typename T, typename allocator = default_smart_allocator<T>>
-class tensr_static
+class tensr_static : public tensr_interface<T>
 {
 protected:
   std::shared_ptr<T[]> data_;
-  tensr_metadata metadata_;
   std::unique_ptr<allocator> alloc_;
 
   static_assert(std::is_arithmetic_v<T>,
@@ -33,7 +32,6 @@ public:
                         size_t offset = 0)
       : metadata_(shape, offset), alloc_(std::make_unique<allocator>())
   {
-
     data_ = alloc_->allocate(metadata_.size());
     for (size_t i = 0; i < metadata_.size(); ++i)
     {
@@ -41,20 +39,31 @@ public:
     }
   }
 
-  [[nodiscard]] virtual std::shared_ptr<T[]> data() const
+  // Data API
+  [[nodiscard]] std::shared_ptr<T[]> data_owner() override
   {
     if (!data_)
       throw std::runtime_error("Data is not initialized.");
     return data_;
   }
 
-  [[nodiscard]] T *raw_data() const { return data_.get(); }
+  [[nodiscard]] const std::shared_ptr<T[]> data_owner() const override
+  {
+    if (!data_)
+      throw std::runtime_error("Data is not initialized.");
+    return data_;
+  }
 
-  [[nodiscard]] const std::vector<size_t> &shape() const
+  [[nodiscard]] T *raw_data() override{ return data_.get(); }
+
+  [[nodiscard]] T const *raw_data() const override { return data_.get(); }
+
+  // Getter API
+  [[nodiscard]] const std::vector<size_t> &shape() const 
   {
     return metadata_.shape();
   }
-  [[nodiscard]] const std::vector<size_t> &strides() const
+  [[nodiscard]] const std::vector<size_t> &strides() const 
   {
     return metadata_.strides();
   }
@@ -62,37 +71,38 @@ public:
   [[nodiscard]] size_t size() const { return metadata_.size(); }
   [[nodiscard]] size_t rank() const { return metadata_.shape().size(); }
 
-  // Access element at given indices
-  T &at(const std::vector<size_t> &indices)
+  // Access API
+  // To do : add bound check to at functions
+  T &at(const std::vector<size_t> &indices) override
   {
     if (indices.size() != metadata_.shape().size())
     {
       throw std::invalid_argument("Indices size must match shape size.");
     }
     size_t index = tensr_utils::flatten_index(metadata_.shape(),
-                                              metadata_.shape(), indices);
+                                              metadata_.strides(), indices);
     return data_[index + metadata_.offset()];
   }
 
-  const T &at(const std::vector<size_t> &indices) const
+  const T &at(const std::vector<size_t> &indices) const override
   {
     if (indices.size() != metadata_.shape().size())
     {
       throw std::invalid_argument("Indices size must match shape size.");
     }
     size_t index = tensr_utils::flatten_index(metadata_.shape(),
-                                              metadata_.shape(), indices);
+                                              metadata_.strides(), indices);
     return data_[index + metadata_.offset()];
   }
 
-  T &operator()(const std::vector<size_t> &indices) { return at(indices); }
+  T &operator()(const std::vector<size_t> &indices) override { return at(indices); }
 
-  const T &operator()(const std::vector<size_t> &indices) const
+  const T &operator()(const std::vector<size_t> &indices) const override
   {
     return at(indices);
   }
 
-  T &operator[](size_t index)
+  T &operator[](size_t index) override
   {
     if (index >= metadata_.size())
     {
@@ -101,7 +111,7 @@ public:
     return data_[index + metadata_.offset()];
   }
 
-  const T &operator[](size_t index) const
+  const T &operator[](size_t index) const override
   {
     if (index >= metadata_.size())
     {
@@ -110,7 +120,7 @@ public:
     return data_[index + metadata_.offset()];
   }
 
-  // Fill functions
+  // Fill API
   void fill(const T &value = T(0)) { fill_custom(value); }
 
   void fill_zeros()

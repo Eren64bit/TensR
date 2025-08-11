@@ -38,4 +38,22 @@ public:
   {
     return tensr_utils::flatten_index(shape_, strides_, indices) + offset_;
   }
+
+  // Shape API
+  void slice(){}
+
+  void reshape(){}
+
+  void transpose(){}
+
+  void permute(){}
+
+  void unsqueeze(){}
+
+  void squeeze(){}
+
+  void broadcast_to(){}
+
+  void gather(){}
+
 };
