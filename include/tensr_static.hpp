@@ -3,7 +3,7 @@
 #include "allocator.hpp"
 #include "tensr_metadata.hpp"
 
-template <typename T, typename allocator = default_smart_allocator<T>>
+template <typename T>
 class tensr_view; // Forward declaration
 
 // TensorStatic<T> represents a fixed-shape, fixed-type tensor.
@@ -12,7 +12,8 @@ class tensr_view; // Forward declaration
 // method
 
 template <typename T, typename allocator = default_smart_allocator<T>>
-class tensr_static {
+class tensr_static
+{
 protected:
   std::shared_ptr<T[]> data_;
   tensr_metadata metadata_;
@@ -23,21 +24,25 @@ protected:
 
 public:
   explicit tensr_static(const std::vector<size_t> &shape, size_t offset = 0)
-      : metadata_(shape, offset), alloc_(std::make_unique<allocator>()) {
+      : metadata_(shape, offset), alloc_(std::make_unique<allocator>())
+  {
     data_ = alloc_->allocate(metadata_.size());
   }
 
   explicit tensr_static(const std::vector<size_t> &shape, const T data[],
                         size_t offset = 0)
-      : metadata_(shape, offset), alloc_(std::make_unique<allocator>()) {
+      : metadata_(shape, offset), alloc_(std::make_unique<allocator>())
+  {
 
     data_ = alloc_->allocate(metadata_.size());
-    for (size_t i = 0; i < metadata_.size(); ++i) {
+    for (size_t i = 0; i < metadata_.size(); ++i)
+    {
       data_[i] = data[i];
     }
   }
 
-  [[nodiscard]] virtual std::shared_ptr<T[]> data() const {
+  [[nodiscard]] virtual std::shared_ptr<T[]> data() const
+  {
     if (!data_)
       throw std::runtime_error("Data is not initialized.");
     return data_;
@@ -45,10 +50,12 @@ public:
 
   [[nodiscard]] T *raw_data() const { return data_.get(); }
 
-  [[nodiscard]] const std::vector<size_t> &shape() const {
+  [[nodiscard]] const std::vector<size_t> &shape() const
+  {
     return metadata_.shape();
   }
-  [[nodiscard]] const std::vector<size_t> &strides() const {
+  [[nodiscard]] const std::vector<size_t> &strides() const
+  {
     return metadata_.strides();
   }
 
@@ -56,8 +63,10 @@ public:
   [[nodiscard]] size_t rank() const { return metadata_.shape().size(); }
 
   // Access element at given indices
-  T &at(const std::vector<size_t> &indices) {
-    if (indices.size() != metadata_.shape().size()) {
+  T &at(const std::vector<size_t> &indices)
+  {
+    if (indices.size() != metadata_.shape().size())
+    {
       throw std::invalid_argument("Indices size must match shape size.");
     }
     size_t index = tensr_utils::flatten_index(metadata_.shape(),
@@ -65,8 +74,10 @@ public:
     return data_[index + metadata_.offset()];
   }
 
-  const T &at(const std::vector<size_t> &indices) const {
-    if (indices.size() != metadata_.shape().size()) {
+  const T &at(const std::vector<size_t> &indices) const
+  {
+    if (indices.size() != metadata_.shape().size())
+    {
       throw std::invalid_argument("Indices size must match shape size.");
     }
     size_t index = tensr_utils::flatten_index(metadata_.shape(),
@@ -76,19 +87,24 @@ public:
 
   T &operator()(const std::vector<size_t> &indices) { return at(indices); }
 
-  const T &operator()(const std::vector<size_t> &indices) const {
+  const T &operator()(const std::vector<size_t> &indices) const
+  {
     return at(indices);
   }
 
-  T &operator[](size_t index) {
-    if (index >= metadata_.size()) {
+  T &operator[](size_t index)
+  {
+    if (index >= metadata_.size())
+    {
       throw std::out_of_range("Index out of bounds.");
     }
     return data_[index + metadata_.offset()];
   }
 
-  const T &operator[](size_t index) const {
-    if (index >= metadata_.size()) {
+  const T &operator[](size_t index) const
+  {
+    if (index >= metadata_.size())
+    {
       throw std::out_of_range("Index out of bounds.");
     }
     return data_[index + metadata_.offset()];
@@ -97,12 +113,14 @@ public:
   // Fill functions
   void fill(const T &value = T(0)) { fill_custom(value); }
 
-  void fill_zeros() {
+  void fill_zeros()
+  {
     if (!data_)
       throw std::runtime_error("Cannot fill: data is null.");
     tensr_utils::fill_data<T>::zeros(data_.get(), metadata_.size());
   }
-  void fill_custom(const T &value) {
+  void fill_custom(const T &value)
+  {
     if (!data_)
       throw std::runtime_error("Cannot fill: data is null.");
     tensr_utils::fill_data<T>::custom(data_.get(), metadata_.size(), value);

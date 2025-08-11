@@ -2,27 +2,16 @@
 
 #include "tensr_static.hpp"
 
-enum class view_type {
-  SLICE,   // Represents a slice of the tensor
-  STRIDED, // Represents a strided view of the tensor
-  MASKED,  // Represents a masked view of the tensor
-  INDEXED, // Represents an indexed view of the tensor
-  CUSTOM   // Represents a custom view of the tensor
-};
-
-class tensr_view_base {
-protected:
-  view_type type_;
-  tensr_metadata parent_metadata_;
+template <typename T>
+class tensr_view
+{
+  tensr_metadata view_meta_;
+  std::shared_ptr<T[]> data_owner_;
+  T *data_ptr_;
 
 public:
-  virtual tensr_metadata get_view_metadata() const = 0;
-  virtual bool is_contiguous() const = 0;
-};
-
-template <typename T, typename allocator = default_smart_allocator<T>>
-class tensr_view {
-  std::unique_ptr<tensr_view_base> view_info_;
-
-public:
+  tensr_view(const tensr_metadata &view_meta,
+             std::shared_ptr<T[]> data_ptr_owner)
+      : view_meta_(view_meta), data_owner_(data_ptr_owner),
+        data_ptr_(data_ptr_owner.get() + view_meta.offset()) {}
 };
