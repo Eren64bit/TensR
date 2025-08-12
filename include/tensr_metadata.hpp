@@ -3,7 +3,7 @@
 
 class tensr_metadata
 {
-
+protected:
   std::vector<size_t> shape_;
   std::vector<size_t> strides_;
   size_t offset_;
@@ -17,6 +17,13 @@ public:
     if (shape.empty())
       throw std::invalid_argument("Shape must not be empty.");
     strides_ = tensr_utils::compute_strides(shape_);
+    total_size_ = size();
+  }
+
+  tensr_metadata(const std::vector<size_t> &shape, size_t offset,
+                 const std::vector<size_t> &strides)
+      : shape_(shape), strides_(strides), offset_(offset)
+  {
     total_size_ = size();
   }
 
@@ -40,20 +47,21 @@ public:
   }
 
   // Shape API
-  void slice(){}
+  static tensr_metadata slice(const tensr_metadata &source,
+                              const std::vector<size_t> &start,
+                              const std::vector<size_t> &stop,
+                              const std::vector<size_t> &step)
+  {
+    if (start.size() != source.rank() || stop.size() != source.rank() || step.size() != source.rank())
+      throw std::invalid_argument("start, stop, step size must match tensor rank");
 
-  void reshape(){}
+    tensr_metadata result = source;
+    for (size_t dim = 0; dim < source.rank(); ++dim)
+    {
+      size_t length = (stop[dim] > start[dim]) ? (stop[dim] - start[dim]) : 0;
+      size_t new_dim_size = (length + step[dim] - 1) / step[dim];
 
-  void transpose(){}
-
-  void permute(){}
-
-  void unsqueeze(){}
-
-  void squeeze(){}
-
-  void broadcast_to(){}
-
-  void gather(){}
-
+      result.shape();
+    }
+  }
 };

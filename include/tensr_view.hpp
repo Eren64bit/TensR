@@ -14,6 +14,17 @@ public:
       : metadata_(view_meta), data_owner_(data_ptr_owner),
         data_ptr_(data_ptr_owner.get() + view_meta.offset()) {}
 
+  tensr_view(const tensr_view& other) = default;
+
+  tensr_view(tensr_view&& other) noexcept = default;
+
+  tensr_view& operator=(const tensr_view& other) = default;
+
+  tensr_view& operator=(tensr_view&& other) noexcept = default;
+
+  ~tensr_view() = default;
+  
+
   // Metadata access
   const tensr_metadata &metadata() const { return metadata_; }
   const std::vector<size_t> &shape() const { return metadata_.shape(); }
