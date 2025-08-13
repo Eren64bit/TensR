@@ -4,6 +4,7 @@
 #include <numeric>
 #include <stdexcept>
 #include <vector>
+#include <unordered_set>
 
 namespace tensr_utils
 {
