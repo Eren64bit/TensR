@@ -1,36 +1,15 @@
 #include <iostream>
-#include "include/tensr_static.h"
+#include "include/tensr_static.hpp"
 
 int main() {
 
-    std::vector<size_t> shape = {2, 3};
-    tensr_static<float> tensor(shape);
+    std::vector<size_t> tnsr_shape = {3, 2};
+    tensr_static<float> my_tensor(tnsr_shape);
+    my_tensor.fill(1.2);
+    my_tensor.info();
+    my_tensor.visualize();
 
+    auto reshaped_tnsr = my_tensor.reshape({6,1});
+    reshaped_tnsr.info();
 
-    tensor.fill_zeros();
-
-
-    std::cout << "Tensor elements after fill_zeros:\n";
-    for (size_t i = 0; i < tensor.size(); ++i) {
-        std::cout << tensor[i] << " ";
-    }
-    std::cout << std::endl;
-
-
-    tensor.fill_custom(7.5f);
-
-    std::cout << "Tensor elements after fill_custom(7.5):\n";
-    for (size_t i = 0; i < tensor.size(); ++i) {
-        std::cout << tensor[i] << " ";
-    }
-    std::cout << std::endl;
-
-
-    std::vector<size_t> idx = {1, 2};
-    tensor.at(idx) = 42.0f;
-    std::cout << "tensor.at({1,2}) = " << tensor.at(idx) << std::endl;
-    std::cout << "tensor(1, 2) = " << tensor(idx) << std::endl;
-    std::cout << "tensor[5] = " << tensor[5] << std::endl;
-
-    return 0;
 }

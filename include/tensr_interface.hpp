@@ -14,7 +14,7 @@ public:
     virtual const T *raw_data() const = 0;
 
     virtual std::shared_ptr<T[]> data_owner() = 0;
-    virtual const std::shared_ptr<T[]> data_owner() const = 0;
+    virtual std::shared_ptr<T[]> data_owner() const = 0;
 
     // Element API
     virtual T &at(const std::vector<size_t> &indices) = 0;

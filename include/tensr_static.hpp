@@ -14,6 +14,7 @@ class tensr_static : public tensr_interface<T>
 protected:
   std::shared_ptr<T[]> data_;
   std::unique_ptr<allocator> alloc_;
+  tensr_metadata metadata_;
 
   static_assert(std::is_arithmetic_v<T>,
                 "error:Tensor type must be arithmetic");
@@ -44,7 +45,7 @@ public:
     return data_;
   }
 
-  [[nodiscard]] const std::shared_ptr<T[]> data_owner() const override
+  [[nodiscard]] std::shared_ptr<T[]> data_owner() const override
   {
     if (!data_)
       throw std::runtime_error("Data is not initialized.");
@@ -162,5 +163,40 @@ public:
     if (!data_)
       throw std::runtime_error("Cannot fill: data is null.");
     tensr_utils::fill_data<T>::custom(data_.get(), metadata_.size(), value);
+  }
+
+  // Info Function
+  void info(const std::string &name = "Tensor") const
+  {
+    std::cout << "=== " << name << " Metadata ===\n";
+    std::cout << "Rank         : " << metadata_.rank() << "\n";
+    std::cout << "Shape        : [";
+    for (size_t i = 0; i < metadata_.rank(); ++i)
+    {
+      std::cout << metadata_.shape()[i];
+      if (i + 1 != metadata_.shape().size())
+        std::cout << ", ";
+    }
+    std::cout << "]\n";
+
+    std::cout << "Strides      : [";
+    for (size_t i = 0; i < strides_.size(); ++i)
+    {
+      std::cout << metadata_.strides()[i];
+      if (i + 1 != metadata_.strides().size())
+        std::cout << ", ";
+    }
+    std::cout << "]\n";
+
+    std::cout << "Offset       : " << metadata_.offset() << "\n";
+    std::cout << "Total Size   : " << metadata_.size() << "\n";
+    std::cout << "==========================\n";
+  }
+
+  void visualize(const std::string &name = "Tensor Data:") const 
+  {
+    std::cout << name << " = " << std::endl;
+    tensr_utils::print_data(metadata_.shape(), this->data_owner());
+    
   }
 };

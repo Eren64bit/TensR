@@ -6,6 +6,7 @@
 template <typename T>
 class tensr_view : public tensr_interface<T>
 {
+  tensr_metadata metadata_;
   std::shared_ptr<T[]> data_owner_;
   T *data_ptr_;
 
@@ -116,5 +117,40 @@ public:
   {
     auto new_meta = tensr_metadata::unsqueeze(this->metadata_, axis);
     return tensr_view<T>(new_meta, this->data_owner());
+  }
+
+  // Info Function
+  void info(const std::string &name = "View") const
+  {
+    std::cout << "=== " << name << " Metadata ===\n";
+    std::cout << "Rank         : " << metadata_.rank() << "\n";
+    std::cout << "Shape        : [";
+    for (size_t i = 0; i < metadata_.rank(); ++i)
+    {
+      std::cout << metadata_.shape()[i];
+      if (i + 1 != metadata_.shape().size())
+        std::cout << ", ";
+    }
+    std::cout << "]\n";
+
+    std::cout << "Strides      : [";
+    for (size_t i = 0; i < strides_.size(); ++i)
+    {
+      std::cout << metadata_.strides()[i];
+      if (i + 1 != metadata_.strides().size())
+        std::cout << ", ";
+    }
+    std::cout << "]\n";
+
+    std::cout << "Offset       : " << metadata_.offset() << "\n";
+    std::cout << "Total Size   : " << metadata_.size() << "\n";
+    std::cout << "==========================\n";
+  }
+
+  void visualize(const std::string &name = "View Data:") const 
+  {
+    std::cout << name << " = " << std::endl;
+    std::cout << "View does not own data." << std::endl;
+    
   }
 };

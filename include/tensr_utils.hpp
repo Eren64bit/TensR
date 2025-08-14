@@ -1,10 +1,13 @@
 #pragma once
 
+#define PRINT_THRESHOLD 6
+
 #include <memory>
 #include <numeric>
 #include <stdexcept>
 #include <vector>
 #include <unordered_set>
+#include <iostream>
 
 namespace tensr_utils
 {
@@ -98,6 +101,49 @@ namespace tensr_utils
       index %= strides[i];
     }
     return indices;
+  }
+  //{3,4,5}
+  template <typename T>
+  static void print_data(const std::vector<size_t> &shape,
+                         const std::shared_ptr<T[]> &data)
+  {
+    size_t total = 1;
+    for (auto s : shape)
+      total *= s;
+
+    std::vector<size_t> strides = compute_strides(shape);
+
+    for (size_t idx = 0; idx < total; ++idx)
+    {
+      std::vector<size_t> indices = unflatten_index(shape, idx);
+
+      bool skip = false;
+      for (size_t dim = 0; dim < shape.size(); ++dim)
+      {
+        if (shape[dim] > PRINT_THRESHOLD &&
+            (indices[dim] != 0 && indices[dim] != shape[dim] - 1))
+        {
+          skip = true;
+          break;
+        }
+      }
+
+      if (!skip)
+      {
+        std::cout << "[";
+        for (size_t i = 0; i < indices.size(); ++i)
+        {
+          std::cout << indices[i];
+          if (i + 1 < indices.size())
+            std::cout << ",";
+        }
+        std::cout << "] = " << data[idx] << "\n";
+      }
+      else if (idx % strides.back() == 0)
+      {
+        std::cout << "... (skipped)\n";
+      }
+    }
   }
 
 } // namespace tensr_utils
