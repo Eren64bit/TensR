@@ -52,10 +52,10 @@ public:
   static tensr_metadata slice(const tensr_metadata &source,
                               const std::vector<size_t> &start,
                               const std::vector<size_t> &stop,
-                              const std::vector<size_t> &step)
+                              size_t step = 1)
   {
-    if (start.size() != source.rank() || stop.size() != source.rank() || step.size() != source.rank())
-      throw std::invalid_argument("slice function: start, stop, step size must match tensor rank");
+    if (start.size() != source.rank() || stop.size() != source.rank())
+      throw std::invalid_argument("slice function: start, stop size must match tensor rank");
 
     std::vector<size_t> new_shape(source.rank());
     std::vector<size_t> new_strides = source.strides();
@@ -65,15 +65,15 @@ public:
     {
       if (start[dim] > stop[dim])
         throw std::invalid_argument("slice function: start must be <= stop for each dimension");
-      if (step[dim] == 0)
+      if (step == 0)
         throw std::invalid_argument("slice function: step must be > 0");
 
       size_t length = stop[dim] - start[dim];
-      size_t new_dim_size = (length + step[dim] - 1) / step[dim];
+      size_t new_dim_size = (length + step - 1) / step;
 
-      new_shape[dim] = (length + step[dim] - 1) / step[dim];
+      new_shape[dim] = (length + step - 1) / step;
       new_offset += start[dim] * source.strides()[dim];
-      new_strides[dim] *= step[dim];
+      new_strides[dim] *= step;
     }
 
     return tensr_metadata(new_shape, new_strides, new_offset);

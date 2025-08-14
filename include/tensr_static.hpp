@@ -1,10 +1,7 @@
 #pragma once
 
 #include "allocator.hpp"
-#include "tensr_interface.hpp"
-
-template <typename T>
-class tensr_view; // Forward declaration
+#include "tensr_view.hpp"
 
 // TensorStatic<T> represents a fixed-shape, fixed-type tensor.
 // It is an abstract base class that provides a common interface for tensors
@@ -54,16 +51,16 @@ public:
     return data_;
   }
 
-  [[nodiscard]] T *raw_data() override{ return data_.get(); }
+  [[nodiscard]] T *raw_data() override { return data_.get(); }
 
   [[nodiscard]] T const *raw_data() const override { return data_.get(); }
 
   // Getter API
-  [[nodiscard]] const std::vector<size_t> &shape() const 
+  [[nodiscard]] const std::vector<size_t> &shape() const
   {
     return metadata_.shape();
   }
-  [[nodiscard]] const std::vector<size_t> &strides() const 
+  [[nodiscard]] const std::vector<size_t> &strides() const
   {
     return metadata_.strides();
   }
@@ -118,6 +115,37 @@ public:
       throw std::out_of_range("Index out of bounds.");
     }
     return data_[index + metadata_.offset()];
+  }
+
+  // Shape API
+  tensr_view<T> reshape(const std::vector<size_t> new_shape)
+  {
+    auto new_meta = tensr_metadata::reshape(this->metadata_, new_shape);
+    return tensr_view<T>(new_meta, this->data_owner());
+  }
+
+  tensr_view<T> slice(const std::vector<size_t> &start, const std::vector<size_t> &stop, size_t step = 1)
+  {
+    auto new_meta = tensr_metadata::slice(this->metadata_, start, stop, step);
+    return tensr_view<T>(new_meta, this->data_owner());
+  }
+
+  tensr_view<T> transpose(const std::vector<size_t> &perm = {})
+  {
+    auto new_meta = tensr_metadata::transpose(this->metadata_, perm);
+    return tensr_view<T>(new_meta, this->data_owner());
+  }
+
+  tensr_view<T> squeeze(const size_t axis)
+  {
+    auto new_meta = tensr_metadata::squeeze(this->metadata_, axis);
+    return tensr_view<T>(new_meta, this->data_owner());
+  }
+
+  tensr_view<T> unsqueeze(const size_t axis)
+  {
+    auto new_meta = tensr_metadata::unsqueeze(this->metadata_, axis);
+    return tensr_view<T>(new_meta, this->data_owner());
   }
 
   // Fill API
