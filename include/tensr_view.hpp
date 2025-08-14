@@ -6,14 +6,13 @@
 template <typename T>
 class tensr_view : public tensr_interface<T>
 {
-  tensr_metadata metadata_;
   std::shared_ptr<T[]> data_owner_;
   T *data_ptr_;
 
 public:
   tensr_view(const tensr_metadata &view_meta,
              std::shared_ptr<T[]> data_ptr_owner)
-      : metadata_(view_meta), data_owner_(data_ptr_owner),
+      : tensr_interface<T>(view_meta), data_owner_(data_ptr_owner),
         data_ptr_(data_ptr_owner.get() + view_meta.offset()) {}
 
   tensr_view(const tensr_view &other) = default;
@@ -27,10 +26,10 @@ public:
   ~tensr_view() = default;
 
   // Metadata access
-  const tensr_metadata &metadata() const { return metadata_; }
-  const std::vector<size_t> &shape() const { return metadata_.shape(); }
-  size_t size() const { return metadata_.size(); }
-  size_t rank() const { return metadata_.rank(); }
+  const tensr_metadata &metadata() const { return this->metadata_; }
+  const std::vector<size_t> &shape() const { return this->metadata_.shape(); }
+  size_t size() const { return this->metadata_.size(); }
+  size_t rank() const { return this->metadata_.rank(); }
 
   // Data access
   T *raw_data() override { return data_ptr_; }
@@ -42,24 +41,24 @@ public:
   // To do : add bound check to at functions
   T &at(const std::vector<size_t> &indices) override
   {
-    if (indices.size() != metadata_.rank())
+    if (indices.size() != this->metadata_.rank())
     {
       throw std::invalid_argument("Indices size must match shape size.");
     }
-    const auto &shape_m = metadata_.shape();
-    const auto &strides_m = metadata_.strides();
+    const auto &shape_m = this->metadata_.shape();
+    const auto &strides_m = this->metadata_.strides();
     size_t index = tensr_utils::flatten_index(shape_m, strides_m, indices);
     return data_ptr_[index];
   }
 
   const T &at(const std::vector<size_t> &indices) const override
   {
-    if (indices.size() != metadata_.shape().size())
+    if (indices.size() != this->metadata_.shape().size())
     {
       throw std::invalid_argument("Indices size must match shape size.");
     }
-    size_t index = tensr_utils::flatten_index(metadata_.shape(),
-                                              metadata_.strides(), indices);
+    size_t index = tensr_utils::flatten_index(this->metadata_.shape(),
+                                              this->metadata_.strides(), indices);
     return data_ptr_[index];
   }
 
@@ -72,7 +71,7 @@ public:
 
   T &operator[](size_t index) override
   {
-    if (index >= metadata_.size())
+    if (index >= this->metadata_.size())
     {
       throw std::out_of_range("Index out of bounds.");
     }
@@ -81,7 +80,7 @@ public:
 
   const T &operator[](size_t index) const override
   {
-    if (index >= metadata_.size())
+    if (index >= this->metadata_.size())
     {
       throw std::out_of_range("Index out of bounds.");
     }
@@ -123,27 +122,27 @@ public:
   void info(const std::string &name = "View") const
   {
     std::cout << "=== " << name << " Metadata ===\n";
-    std::cout << "Rank         : " << metadata_.rank() << "\n";
+    std::cout << "Rank         : " << this->metadata_.rank() << "\n";
     std::cout << "Shape        : [";
-    for (size_t i = 0; i < metadata_.rank(); ++i)
+    for (size_t i = 0; i < this->metadata_.rank(); ++i)
     {
-      std::cout << metadata_.shape()[i];
-      if (i + 1 != metadata_.shape().size())
+      std::cout << this->metadata_.shape()[i];
+      if (i + 1 != this->metadata_.shape().size())
         std::cout << ", ";
     }
     std::cout << "]\n";
 
     std::cout << "Strides      : [";
-    for (size_t i = 0; i < strides_.size(); ++i)
+    for (size_t i = 0; i < this->metadata_.strides().size(); ++i)
     {
-      std::cout << metadata_.strides()[i];
-      if (i + 1 != metadata_.strides().size())
+      std::cout << this->metadata_.strides()[i];
+      if (i + 1 != this->metadata_.strides().size())
         std::cout << ", ";
     }
     std::cout << "]\n";
 
-    std::cout << "Offset       : " << metadata_.offset() << "\n";
-    std::cout << "Total Size   : " << metadata_.size() << "\n";
+    std::cout << "Offset       : " << this->metadata_.offset() << "\n";
+    std::cout << "Total Size   : " << this->metadata_.size() << "\n";
     std::cout << "==========================\n";
   }
 

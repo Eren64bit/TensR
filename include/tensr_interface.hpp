@@ -9,6 +9,10 @@ protected:
     tensr_metadata metadata_;
 
 public:
+    tensr_interface(const std::vector<size_t> &shape, size_t offset = 0)
+        : metadata_(shape, offset) {}
+
+    tensr_interface(const tensr_metadata& meta) : metadata_(meta) {}
     // Data API
     virtual T *raw_data() = 0;
     virtual const T *raw_data() const = 0;
@@ -25,6 +29,4 @@ public:
 
     virtual T &operator[](size_t index) = 0;
     virtual const T &operator[](size_t index) const = 0;
-
-    
 };

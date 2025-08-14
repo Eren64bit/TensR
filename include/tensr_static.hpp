@@ -14,24 +14,23 @@ class tensr_static : public tensr_interface<T>
 protected:
   std::shared_ptr<T[]> data_;
   std::unique_ptr<allocator> alloc_;
-  tensr_metadata metadata_;
 
   static_assert(std::is_arithmetic_v<T>,
                 "error:Tensor type must be arithmetic");
 
 public:
   explicit tensr_static(const std::vector<size_t> &shape, size_t offset = 0)
-      : metadata_(shape, offset), alloc_(std::make_unique<allocator>())
+      : tensr_interface<T>(shape, offset), alloc_(std::make_unique<allocator>())
   {
-    data_ = alloc_->allocate(metadata_.size());
+    data_ = alloc_->allocate(this->metadata_.size());
   }
 
   explicit tensr_static(const std::vector<size_t> &shape, const T data[],
                         size_t offset = 0)
-      : metadata_(shape, offset), alloc_(std::make_unique<allocator>())
+      : tensr_interface<T>(shape, offset), alloc_(std::make_unique<allocator>())
   {
-    data_ = alloc_->allocate(metadata_.size());
-    for (size_t i = 0; i < metadata_.size(); ++i)
+    data_ = alloc_->allocate(this->metadata_.size());
+    for (size_t i = 0; i < this->metadata_.size(); ++i)
     {
       data_[i] = data[i];
     }
@@ -59,38 +58,38 @@ public:
   // Getter API
   [[nodiscard]] const std::vector<size_t> &shape() const
   {
-    return metadata_.shape();
+    return this->metadata_.shape();
   }
   [[nodiscard]] const std::vector<size_t> &strides() const
   {
-    return metadata_.strides();
+    return this->metadata_.strides();
   }
 
-  [[nodiscard]] size_t size() const { return metadata_.size(); }
-  [[nodiscard]] size_t rank() const { return metadata_.shape().size(); }
+  [[nodiscard]] size_t size() const { return this->metadata_.size(); }
+  [[nodiscard]] size_t rank() const { return this->metadata_.shape().size(); }
 
   // Access API
   // To do : add bound check to at functions
   T &at(const std::vector<size_t> &indices) override
   {
-    if (indices.size() != metadata_.shape().size())
+    if (indices.size() != this->metadata_.shape().size())
     {
       throw std::invalid_argument("Indices size must match shape size.");
     }
-    size_t index = tensr_utils::flatten_index(metadata_.shape(),
-                                              metadata_.strides(), indices);
-    return data_[index + metadata_.offset()];
+    size_t index = tensr_utils::flatten_index(this->metadata_.shape(),
+                                              this->metadata_.strides(), indices);
+    return data_[index + this->metadata_.offset()];
   }
 
   const T &at(const std::vector<size_t> &indices) const override
   {
-    if (indices.size() != metadata_.shape().size())
+    if (indices.size() != this->metadata_.shape().size())
     {
       throw std::invalid_argument("Indices size must match shape size.");
     }
-    size_t index = tensr_utils::flatten_index(metadata_.shape(),
-                                              metadata_.strides(), indices);
-    return data_[index + metadata_.offset()];
+    size_t index = tensr_utils::flatten_index(this->metadata_.shape(),
+                                              this->metadata_.strides(), indices);
+    return data_[index + this->metadata_.offset()];
   }
 
   T &operator()(const std::vector<size_t> &indices) override { return at(indices); }
@@ -102,20 +101,20 @@ public:
 
   T &operator[](size_t index) override
   {
-    if (index >= metadata_.size())
+    if (index >= this->metadata_.size())
     {
       throw std::out_of_range("Index out of bounds.");
     }
-    return data_[index + metadata_.offset()];
+    return data_[index + this->metadata_.offset()];
   }
 
   const T &operator[](size_t index) const override
   {
-    if (index >= metadata_.size())
+    if (index >= this->metadata_.size())
     {
       throw std::out_of_range("Index out of bounds.");
     }
-    return data_[index + metadata_.offset()];
+    return data_[index + this->metadata_.offset()];
   }
 
   // Shape API
@@ -156,47 +155,47 @@ public:
   {
     if (!data_)
       throw std::runtime_error("Cannot fill: data is null.");
-    tensr_utils::fill_data<T>::zeros(data_.get(), metadata_.size());
+    tensr_utils::fill_data<T>::zeros(data_.get(), this->metadata_.size());
   }
   void fill_custom(const T &value)
   {
     if (!data_)
       throw std::runtime_error("Cannot fill: data is null.");
-    tensr_utils::fill_data<T>::custom(data_.get(), metadata_.size(), value);
+    tensr_utils::fill_data<T>::custom(data_.get(), this->metadata_.size(), value);
   }
 
   // Info Function
   void info(const std::string &name = "Tensor") const
   {
     std::cout << "=== " << name << " Metadata ===\n";
-    std::cout << "Rank         : " << metadata_.rank() << "\n";
+    std::cout << "Rank         : " << this->metadata_.rank() << "\n";
     std::cout << "Shape        : [";
-    for (size_t i = 0; i < metadata_.rank(); ++i)
+    for (size_t i = 0; i < this->metadata_.rank(); ++i)
     {
-      std::cout << metadata_.shape()[i];
-      if (i + 1 != metadata_.shape().size())
+      std::cout << this->metadata_.shape()[i];
+      if (i + 1 != this->metadata_.shape().size())
         std::cout << ", ";
     }
     std::cout << "]\n";
 
     std::cout << "Strides      : [";
-    for (size_t i = 0; i < strides_.size(); ++i)
+    for (size_t i = 0; i < this->metadata_.strides().size(); ++i)
     {
-      std::cout << metadata_.strides()[i];
-      if (i + 1 != metadata_.strides().size())
+      std::cout << this->metadata_.strides()[i];
+      if (i + 1 != this->metadata_.strides().size())
         std::cout << ", ";
     }
     std::cout << "]\n";
 
-    std::cout << "Offset       : " << metadata_.offset() << "\n";
-    std::cout << "Total Size   : " << metadata_.size() << "\n";
+    std::cout << "Offset       : " << this->metadata_.offset() << "\n";
+    std::cout << "Total Size   : " << this->metadata_.size() << "\n";
     std::cout << "==========================\n";
   }
 
   void visualize(const std::string &name = "Tensor Data:") const 
   {
     std::cout << name << " = " << std::endl;
-    tensr_utils::print_data(metadata_.shape(), this->data_owner());
+    tensr_utils::print_data(this->metadata_.shape(), this->data_owner());
     
   }
 };
