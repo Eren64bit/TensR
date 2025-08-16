@@ -1,0 +1,6 @@
+OS=Linux
+CPU=12th Gen Intel(R) Core(TM) i5-12450H
+CPU_CORES=12
+RAM_MB=15688
+GPU=Unknown GPU
+GPU_MEM=-1
