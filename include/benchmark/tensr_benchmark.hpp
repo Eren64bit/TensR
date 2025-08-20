@@ -23,6 +23,12 @@
 #include <cuda_runtime.h>
 #endif
 
+#if defined(__GNUC__) || defined(__clang__)
+#define HAS_BUILTIN_CPU_SUPPORT 1
+#else
+#define HAS_BUILTIN_CPU_SUPPORT 0
+#endif
+
 // helper functions
 std::string exec_command(const std::string &cmd)
 {
@@ -106,11 +112,19 @@ public:
         std::cout << "Starting Linux system benchmark...\n";
         detect_hardware();
         detect_capabilities();
-
+        save_to_file();
         std::cout << "Benchmark completed!\n";
     }
 
-    void save_to_file();
+    void save_to_file(std::string path = default_output_path())
+    {
+        std::cout << "Starting writing to file..." << "\n";
+        std::ofstream file(path);
+        file << generate_file();
+        file.close();
+        std::cout << "Finished writing to file" << "\n";
+        std::cout << "Result saved to benchmark_config.txt" << "\n";
+    }
 
 private:
     // ------------- Detect Hardware -------------
@@ -258,10 +272,18 @@ private:
 
     void detect_simd_support()
     {
+#if HAS_BUILTIN_CPU_SUPPORT
         results_.capabilities.sse_support = __builtin_cpu_supports("sse");
         results_.capabilities.avx_support = __builtin_cpu_supports("avx");
         results_.capabilities.avx2_support = __builtin_cpu_supports("avx2");
-        results_.capabilities.avx512_support = __builtin_cpu_supports("avx512");
+        results_.capabilities.avx512_support = __builtin_cpu_supports("avx512f");
+#else
+        std::string res = exec_command("lscpu | grep Flags");
+        results_.capabilities.sse_support = (res.find("sse") != std::string::npos);
+        results_.capabilities.avx_support = (res.find("avx") != std::string::npos);
+        results_.capabilities.avx2_support = (res.find("avx2") != std::string::npos);
+        results_.capabilities.avx512_support = (res.find("avx512f") != std::string::npos);
+#endif
     }
 
     void detect_cuda_support()
@@ -297,5 +319,44 @@ private:
         results_.capabilities.opencl_available = std::filesystem::exists("/usr/lib/libOpenCL.so") ||
                                                  std::filesystem::exists("/usr/lib64/libOpenCL.so");
     }
+    //  ------------- Detect Capabilities  -------------
+
+    // ------------- Generate File -------------
+    std::string generate_file()
+    {
+        std::ostringstream file;
+        file << "{\n";
+        file << "  \"hardware\": {\n";
+        file << "    \"cpu_name\": \"" << results_.hardware.cpu_name << "\",\n";
+        file << "    \"cpu_cores\": " << results_.hardware.cpu_cores << ",\n";
+        file << "    \"cpu_architecture\": \"" << results_.hardware.cpu_architecture << "\",\n";
+        file << "    \"total_memory_gb\": " << results_.hardware.total_memory_gb << ",\n";
+        file << "    \"free_memory_gb\":  " << results_.hardware.free_memory_gb << ",\n";
+        file << "    \"gpu_names\": [";
+
+        for (size_t i = 0; i < results_.hardware.gpu_names.size(); ++i)
+        {
+            file << "\"" << results_.hardware.gpu_names[i] << "\"";
+            if (i < results_.hardware.gpu_names.size() - 1)
+                file << ", ";
+        }
+
+        file << "],\n";
+        file << "    \"available_gpu_memory_gb\": " << results_.hardware.available_gpu_memory_gb << "\n";
+        file << "  },\n";
+
+        file << "  \"capabilities\": {\n";
+        file << "    \"sse_support\": " << (results_.capabilities.sse_support ? "true" : "false") << ",\n";
+        file << "    \"avx_support\": " << (results_.capabilities.avx_support ? "true" : "false") << ",\n";
+        file << "    \"avx2_support\": " << (results_.capabilities.avx2_support ? "true" : "false") << ",\n";
+        file << "    \"avx512_support\": " << (results_.capabilities.avx512_support ? "true" : "false") << ",\n";
+        file << "    \"cuda_available\": " << (results_.capabilities.cuda_available ? "true" : "false") << ",\n";
+        file << "    \"cuda_version\": \"" << results_.capabilities.cuda_version << "\",\n";
+        file << "    \"opencl_available\": " << (results_.capabilities.opencl_available ? "true" : "false") << "\n";
+        file << "  },\n";
+
+        return file.str();
+    }
+    // ------------- Generate File -------------
 };
 #endif

@@ -1,9 +1,10 @@
 #include <iostream>
 #include "include/tensr_static.hpp"
-#include "include/tensr_benchmark.hpp"
+#include "include/benchmark/tensr_benchmark.hpp"
 
 int main() {
 
-    run_benchmark();
+    smart_benchmark_linux bench;
+    bench.run_full_benchmark();
     return 0;
 }
