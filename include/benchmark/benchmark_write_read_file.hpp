@@ -42,6 +42,19 @@ public:
         return file.str();
     }
 
+    void save_to_file(const std::string &filename)
+    {
+        std::ofstream ofs(filename);
+        if (!ofs.is_open())
+        {
+            std::cerr << "Error opening file for writing: " << filename << std::endl;
+            return;
+        }
+
+        ofs << generate_file();
+        ofs.close();
+    }
+
 private:
-    benchmark_res results_;
+    benchmark_res &results_;
 };

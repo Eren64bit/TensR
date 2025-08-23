@@ -28,7 +28,7 @@ public:
                 if (std::regex_search(line, match, pattern))
                 {
                     size_t memory_kb = std::stoul(match[0]);
-                    results_.hardware.total_memory_gb = memory_kb / (1024 * 1024);
+                    results_.hardware.free_memory_gb = memory_kb / (1024 * 1024);
                 }
             }
         }

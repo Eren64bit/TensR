@@ -5,6 +5,6 @@
 int main() {
 
     smart_benchmark_linux bench;
-    bench.run_full_benchmark();
+    bench.run_all_benchmarks();
     return 0;
 }

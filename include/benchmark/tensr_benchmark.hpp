@@ -1,17 +1,9 @@
 #pragma once
-#include <iostream>
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <thread>
-#include <array>
-#include <filesystem>
-#include <map>
-#include <vector>
-#include <regex>
-#include <immintrin.h>
-#include <dlfcn.h>
-#include <chrono>
+#include "benchmark_get_cpu_info.hpp"
+#include "benchmark_get_gpu_info.hpp"
+#include "benchmark_get_mem_info.hpp"
+#include "benchmark_performance.hpp"
+#include "benchmark_write_read_file.hpp"
 
 #if defined(_WIN32) || defined(_WIN64)
 #define OS_WINDOWS
@@ -21,15 +13,28 @@
 #define OS_MAC
 #endif
 
-#if defined(__GNUC__) || defined(__clang__)
-#define HAS_BUILTIN_CPU_SUPPORT 1
-#else
-#define HAS_BUILTIN_CPU_SUPPORT 0
-#endif
-
-
 #ifdef OS_LINUX
 class smart_benchmark_linux
 {
+public:
+    smart_benchmark_linux() = default;
+    ~smart_benchmark_linux() = default;
+
+    void run_all_benchmarks()
+    {
+        std::cout << "Running benchmarks on Linux...\n";
+        benchmark_res results_;
+        get_cpu_info cpu_info(results_);
+        cpu_info.detect_cpu_info();
+        get_mem_info mem_info(results_);
+        mem_info.detect_memory_info();
+        get_gpu_info gpu_info(results_);
+        gpu_info.detect_gpu_info();
+        write_read_file file_io(results_);
+        std::string output_path = utils_benchmark::default_output_path();
+        file_io.save_to_file(output_path);
+        std::cout << "Benchmark results saved to " << output_path << "\n";
+        // detect_performance();
+    }
 };
 #endif

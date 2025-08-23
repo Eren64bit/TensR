@@ -89,5 +89,5 @@ public:
     }
 
 private:
-    benchmark_res results_;
+    benchmark_res &results_;
 };

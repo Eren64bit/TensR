@@ -18,7 +18,7 @@ public:
         results_.hardware.cpu_name = utils_benchmark::get_ifstream_info(s1, s2);
         results_.hardware.cpu_cores = std::thread::hardware_concurrency();
         std::string cpu_cmd = "lscpu | grep Architecture";
-        utils_benchmark::exec_cmd_and_get_string(cpu_cmd);
+        results_.hardware.cpu_architecture = utils_benchmark::exec_cmd_and_get_string(cpu_cmd);
 
 #if HAS_BUILTIN_CPU_SUPPORT
         results_.capabilities.sse_support = __builtin_cpu_supports("sse");
@@ -35,7 +35,7 @@ public:
     }
 
 private:
-    benchmark_res results_;
+    benchmark_res &results_;
 };
 
 

@@ -147,10 +147,11 @@ namespace utils_benchmark
         return trim(result);
     }
 
-    std::string get_ifstream_info(std::string &path, std::string &key)
+    std::string get_ifstream_info(const std::string &path, const std::string &key)
     {
         std::ifstream file(path);
-        if (!file.is_open()) return "";
+        if (!file.is_open())
+            return "";
         std::string content;
         while (std::getline(file, content))
         {
@@ -165,11 +166,11 @@ namespace utils_benchmark
                 {
                     return "";
                 }
-            } 
+            }
         }
-        
+        return ""; // <-- eksik return eklendi
     }
-        
+
     std::string get_library_dir()
     {
         Dl_info info;
@@ -181,10 +182,10 @@ namespace utils_benchmark
     {
         const char *home = std::getenv("HOME");
         std::string base = home ? std::string(home) : std::string("/tmp");
-        std::string dir = base + "/.stargaze";
+        std::string dir = base + "/.stargazer";
         std::error_code ec;
         std::filesystem::create_directories(dir, ec);
-        return dir + "/benchmark_config.txt";
+        return dir + "/benchmark_conf.txt";
     }
 
 }
