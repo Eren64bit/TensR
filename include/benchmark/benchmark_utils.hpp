@@ -68,12 +68,14 @@ struct benchmark_res
 
 struct cuda_functions
 {
-    using cuda_available_t = int (*)();
+    // FIX: cuda_available returns bool, not int
+    using cuda_available_t = bool (*)(); // Was: int (*)()
     using cuda_malloc_t = void *(*)(size_t);
     using cuda_free_t = void (*)(void *);
     using cuda_sync_t = void (*)();
     using cuda_copy_to_cpu_t = void (*)(void *, const void *, size_t);
     using cuda_copy_to_gpu_t = void (*)(void *, const void *, size_t);
+    using cuda_add_elementwise_t = void (*)(const float *, const float *, float *, size_t);
 
     cuda_available_t cuda_available = nullptr;
     cuda_malloc_t cuda_malloc = nullptr;
@@ -81,36 +83,139 @@ struct cuda_functions
     cuda_sync_t cuda_sync = nullptr;
     cuda_copy_to_cpu_t cuda_copy_to_cpu = nullptr;
     cuda_copy_to_gpu_t cuda_copy_to_gpu = nullptr;
+    cuda_add_elementwise_t cuda_add_elementwise = nullptr;
 };
 
 class cuda_loader
 {
+private:
+    void *handle_ = nullptr;
+    cuda_functions funcs_;
+
 public:
     explicit cuda_loader(const char *lib_path)
     {
         handle_ = dlopen(lib_path, RTLD_LAZY);
         if (!handle_)
-            throw std::runtime_error("CUDA lib not found!\n");
+        {
+            const char *error = dlerror();
+            throw std::runtime_error(std::string("CUDA lib not found: ") + (error ? error : "Unknown error"));
+        }
+
+        // Clear any existing errors
+        dlerror();
+
+        // Load functions with error checking
         funcs_.cuda_available = (cuda_functions::cuda_available_t)dlsym(handle_, "cuda_available");
+        check_dlsym_error("cuda_available");
+
         funcs_.cuda_malloc = (cuda_functions::cuda_malloc_t)dlsym(handle_, "cuda_malloc");
+        check_dlsym_error("cuda_malloc");
+
         funcs_.cuda_free = (cuda_functions::cuda_free_t)dlsym(handle_, "cuda_free");
+        check_dlsym_error("cuda_free");
+
         funcs_.cuda_sync = (cuda_functions::cuda_sync_t)dlsym(handle_, "cuda_sync");
+        check_dlsym_error("cuda_sync");
+
         funcs_.cuda_copy_to_cpu = (cuda_functions::cuda_copy_to_cpu_t)dlsym(handle_, "cuda_copy_to_cpu");
+        check_dlsym_error("cuda_copy_to_cpu");
+
         funcs_.cuda_copy_to_gpu = (cuda_functions::cuda_copy_to_gpu_t)dlsym(handle_, "cuda_copy_to_gpu");
+        check_dlsym_error("cuda_copy_to_gpu");
+
+        funcs_.cuda_add_elementwise = (cuda_functions::cuda_add_elementwise_t)dlsym(handle_, "cuda_add_elementwise");
+        check_dlsym_error("cuda_add_elementwise");
+
+        printf("CUDA library loaded successfully\n");
+        printf("Function pointers:\n");
+        printf("  cuda_available: %p\n", (void *)funcs_.cuda_available);
+        printf("  cuda_malloc: %p\n", (void *)funcs_.cuda_malloc);
+        printf("  cuda_free: %p\n", (void *)funcs_.cuda_free);
     }
 
     const cuda_functions &get_functions() const { return funcs_; }
 
+    bool is_loaded() const { return handle_ != nullptr; }
+
     ~cuda_loader()
     {
         if (handle_)
+        {
             dlclose(handle_);
+            handle_ = nullptr;
+        }
     }
 
 private:
-    void *handle_;
-    cuda_functions funcs_;
+    void check_dlsym_error(const char *symbol_name)
+    {
+        const char *error = dlerror();
+        if (error)
+        {
+            dlclose(handle_);
+            handle_ = nullptr;
+            throw std::runtime_error(std::string("Failed to load symbol ") + symbol_name + ": " + error);
+        }
+    }
+
+    // Prevent copying
+    cuda_loader(const cuda_loader &) = delete;
+    cuda_loader &operator=(const cuda_loader &) = delete;
 };
+
+// Additional debug function to test the loader
+void test_cuda_loader(const cuda_loader &loader)
+{
+    printf("=== Testing CUDA Loader ===\n");
+
+    const auto &funcs = loader.get_functions();
+
+    // Test cuda_available first
+    if (funcs.cuda_available)
+    {
+        printf("Testing cuda_available...\n");
+        bool available = funcs.cuda_available();
+        printf("CUDA available: %s\n", available ? "Yes" : "No");
+
+        if (!available)
+        {
+            printf("CUDA not available, skipping memory tests\n");
+            return;
+        }
+    }
+    else
+    {
+        printf("cuda_available function not loaded!\n");
+        return;
+    }
+
+    // Test memory allocation
+    if (funcs.cuda_malloc && funcs.cuda_free)
+    {
+        printf("Testing memory allocation...\n");
+
+        const size_t test_size = 1024; // 1KB test
+        void *test_ptr = funcs.cuda_malloc(test_size);
+
+        if (test_ptr)
+        {
+            printf("✓ Allocated %zu bytes at %p\n", test_size, test_ptr);
+            funcs.cuda_free(test_ptr);
+            printf("✓ Memory freed successfully\n");
+        }
+        else
+        {
+            printf("✗ Memory allocation failed\n");
+        }
+    }
+    else
+    {
+        printf("Memory functions not loaded!\n");
+    }
+
+    printf("=== Loader Test Complete ===\n");
+}
 
 namespace utils_benchmark
 {

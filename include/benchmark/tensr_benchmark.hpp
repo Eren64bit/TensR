@@ -24,17 +24,21 @@ public:
     {
         std::cout << "Running benchmarks on Linux...\n";
         benchmark_res results_;
+        std::string lib_path = utils_benchmark::get_library_dir() + "/libcuda_tensr_api.so";
+        cuda_loader cuda_loader_(lib_path.c_str());
         get_cpu_info cpu_info(results_);
         cpu_info.detect_cpu_info();
         get_mem_info mem_info(results_);
         mem_info.detect_memory_info();
         get_gpu_info gpu_info(results_);
         gpu_info.detect_gpu_info();
+        detect_performance performance(results_, cuda_loader_);
+        performance.run_perfm_benchmark();
         write_read_file file_io(results_);
         std::string output_path = utils_benchmark::default_output_path();
         file_io.save_to_file(output_path);
         std::cout << "Benchmark results saved to " << output_path << "\n";
-        // detect_performance();
+        
     }
 };
 #endif
